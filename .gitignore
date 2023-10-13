@@ -1,2 +1,2 @@
-model/images
-model/h5
+model/images/*
+model/h5/*
