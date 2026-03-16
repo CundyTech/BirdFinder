@@ -1,16 +1,19 @@
-import tensorflow as tf
-from keras.preprocessing.image import ImageDataGenerator
-from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
-from keras.models import Sequential
-from keras.preprocessing.image import load_img
 import os
+from pathlib import Path
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.preprocessing.image import load_img
 
-# Set up data directories
-train_dir = '.\segmentations'
-validation_dir = '.\segmentations'
+
+# Set up data directories (point to model/h5/images/segmentations)
+base_dir = Path(__file__).resolve().parent
+train_dir = str((base_dir / '..' / 'images' / 'segmentations').resolve())
+validation_dir = train_dir
 
 # Define model parameters
-num_classes = len(os.listdir(train_dir))
+num_classes = len([d for d in os.listdir(train_dir) if os.path.isdir(os.path.join(train_dir, d))])
 input_shape = (224, 224, 3)
 
 # Data preprocessing
@@ -66,11 +69,15 @@ model.compile(
 # Train the model
 history = model.fit(
     train_generator,
-    steps_per_epoch=train_generator.samples // train_generator.batch_size,
+    steps_per_epoch=max(1, train_generator.samples // train_generator.batch_size),
     epochs=10,
     validation_data=validation_generator,
-    validation_steps=validation_generator.samples // validation_generator.batch_size
+    validation_steps=max(1, validation_generator.samples // validation_generator.batch_size)
 )
 
-# Save the trained model
-model.save('bird_classifier_model.h5')
+# Save the trained model (HDF5 for compatibility) into repository `h5` folder
+out_dir = (base_dir / '..' / 'h5').resolve()
+out_dir.mkdir(parents=True, exist_ok=True)
+out_path = out_dir / 'bird_classifier_model.h5'
+model.save(str(out_path))
+print(f"Saved model to {out_path}")
