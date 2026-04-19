@@ -8,9 +8,9 @@
     "ios": "expo start --ios"
   },
   "dependencies": {
-    "expo": "~48.0.0",
+    "expo": "^48.0.0",
     "expo-image-picker": "~14.1.1",
     "react": "18.2.0",
-    "react-native": "0.71.8"
+    "react-native": "0.71.14"
   }
 }

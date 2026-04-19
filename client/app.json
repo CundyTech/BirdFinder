@@ -2,6 +2,7 @@
   "expo": {
     "name": "BirdFinderClient",
     "slug": "BirdFinderClient",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "sdkVersion": "48.0.0"
   }
 }

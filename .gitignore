@@ -1,3 +1,5 @@
 model/images/*
 model/h5/*
 client/node_modules/*
+/client/node_modules
+/client/node_modules/*
