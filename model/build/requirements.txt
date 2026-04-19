@@ -1,5 +1,6 @@
 # Note: TensorFlow binary wheels may be unavailable for some Python/OS/architecture combinations
 # (e.g. Windows ARM64 or very new Python versions). See the repository README for guidance.
+tensorflow==2.21.0
 scipy==1.17.1
 Pillow==12.1.1
 numpy==2.4.3
