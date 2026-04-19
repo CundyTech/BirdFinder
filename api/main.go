@@ -4,66 +4,65 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	http.HandleFunc("/predict", corsMiddleware(predictHandler))
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("BirdFinder API: POST /predict (multipart form field 'image')"))
+	router := gin.New()
+	router.Use(gin.Logger(), gin.Recovery(), corsMiddleware())
+
+	router.GET("/", func(c *gin.Context) {
+		c.String(200, "BirdFinder API: POST /predict (multipart form field 'image')")
 	})
+
+	router.POST("/predict", predictHandler)
 
 	addr := ":8080"
 	log.Printf("Starting API on %s\n", addr)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	log.Fatal(router.Run(addr))
 }
 
-// corsMiddleware adds simple CORS headers and handles OPTIONS preflight.
-func corsMiddleware(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		if r.Method == http.MethodOptions {
-			w.WriteHeader(http.StatusOK)
+func corsMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(200)
 			return
 		}
-		next(w, r)
+		c.Next()
 	}
 }
 
-func predictHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	err := r.ParseMultipartForm(20 << 20) // 20 MB
+func predictHandler(c *gin.Context) {
+	file, err := c.FormFile("image")
 	if err != nil {
-		http.Error(w, "failed to parse multipart form", http.StatusBadRequest)
+		c.JSON(400, gin.H{"error": "missing 'image' form file"})
 		return
 	}
-
-	file, _, err := r.FormFile("image")
-	if err != nil {
-		http.Error(w, "missing 'image' form file", http.StatusBadRequest)
-		return
-	}
-	defer file.Close()
 
 	tmp, err := os.CreateTemp("", "upload-*.jpg")
 	if err != nil {
-		http.Error(w, "failed to create temp file", http.StatusInternalServerError)
+		c.JSON(500, gin.H{"error": "failed to create temp file"})
 		return
 	}
 	defer os.Remove(tmp.Name())
 
-	if _, err := io.Copy(tmp, file); err != nil {
-		http.Error(w, "failed to save uploaded file", http.StatusInternalServerError)
+	src, err := file.Open()
+	if err != nil {
+		c.JSON(500, gin.H{"error": "failed to read uploaded file"})
+		return
+	}
+	defer src.Close()
+
+	if _, err := io.Copy(tmp, src); err != nil {
+		c.JSON(500, gin.H{"error": "failed to save uploaded file"})
 		return
 	}
 	tmp.Close()
@@ -71,9 +70,7 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 	// Assume API is run from the `api` directory. Use relative path to the Python wrapper.
 	scriptPath := filepath.Join("..", "model", "build", "predict_cli.py")
 
-	// Call the Python prediction wrapper
 	cmd := exec.Command("python", scriptPath, "--image", tmp.Name())
-	// set a reasonable timeout by using a goroutine + channel
 	done := make(chan struct{})
 	var out []byte
 	var cmdErr error
@@ -87,16 +84,16 @@ func predictHandler(w http.ResponseWriter, r *http.Request) {
 		if cmdErr != nil {
 			msg := fmt.Sprintf("predictor failed: %v\n%s", cmdErr, string(out))
 			log.Print(msg)
-			http.Error(w, msg, http.StatusInternalServerError)
+			c.JSON(500, gin.H{"error": msg})
 			return
 		}
 	case <-time.After(30 * time.Second):
-		cmd.Process.Kill()
-		http.Error(w, "prediction timed out", http.StatusGatewayTimeout)
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+		}
+		c.JSON(504, gin.H{"error": "prediction timed out"})
 		return
 	}
 
-	// The Python wrapper prints a JSON object to stdout. Forward it as-is.
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(out)
+	c.Data(200, "application/json", out)
 }
