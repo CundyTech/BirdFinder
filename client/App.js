@@ -126,8 +126,14 @@ export default function App() {
 
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerContent}>
-            <Text style={styles.title}>🦅 BirdFinder 🇬🇧</Text>
+          <View style={styles.headerTop}>
+            <Text style={styles.title}>🦅 BirdFinder</Text>
+            <View style={styles.headerTag}>
+              <Text style={styles.headerTagText}>UK Edition</Text>
+            </View>
+          </View>
+          <View style={styles.headerBottom}>
+            <Text style={styles.subtitle}>Identify a bird with one photo</Text>
             {healthLoading ? (
               <ActivityIndicator size="small" color={styles.primary.color} />
             ) : (
@@ -137,7 +143,6 @@ export default function App() {
               ]} />
             )}
           </View>
-          <Text style={styles.subtitle}>AI-Powered Bird Identification</Text>
         </View>
 
         {/* Initial Placeholder */}
@@ -241,12 +246,6 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  headerContent: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
@@ -254,15 +253,40 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   subtitle: {
-    fontSize: 16,
-    color: '#b0b0b0',
+    fontSize: 15,
+    color: '#c2c9d6',
     textAlign: 'center',
-    opacity: 0.8,
+    opacity: 0.85,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexWrap: 'wrap',
+  },
+  headerBottom: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  headerTag: {
+    backgroundColor: '#274571',
+    borderRadius: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    marginLeft: 10,
+  },
+  headerTagText: {
+    color: '#d6e4ff',
+    fontSize: 12,
+    fontWeight: '700',
   },
   statusIndicator: {
     width: 12,
     height: 12,
     borderRadius: 6,
+    marginLeft: 10,
   },
   statusHealthy: {
     backgroundColor: '#4CAF50',
@@ -271,22 +295,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#f44336',
   },
   imageCard: {
-    backgroundColor: '#1e1e1e',
-    borderRadius: 16,
-    padding: 15,
-    marginBottom: 20,
+    backgroundColor: '#141f33',
+    borderRadius: 20,
+    padding: 18,
+    marginBottom: 18,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.22,
+    shadowRadius: 12,
+    elevation: 8,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#1f2f4d',
   },
   image: {
     width: width - 70,
     height: width - 70,
-    borderRadius: 12,
+    borderRadius: 18,
     resizeMode: 'cover',
   },
   placeholderContainer: {
@@ -296,37 +320,37 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
   },
   placeholderCard: {
-    backgroundColor: '#1e1e1e',
-    borderRadius: 20,
-    padding: 30,
+    backgroundColor: '#141f33',
+    borderRadius: 22,
+    padding: 28,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 10,
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#1c2a45',
     maxWidth: width - 40,
   },
   placeholderIcon: {
-    fontSize: 60,
-    marginBottom: 20,
-    opacity: 0.8,
+    fontSize: 72,
+    marginBottom: 18,
+    opacity: 0.85,
   },
   placeholderTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 26,
+    fontWeight: '700',
     color: '#ffffff',
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: 12,
   },
   placeholderText: {
-    fontSize: 16,
-    color: '#b0b0b0',
+    fontSize: 15,
+    color: '#b9c6dc',
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 25,
+    marginBottom: 22,
   },
   placeholderHint: {
     backgroundColor: '#2a2a2a',
@@ -368,26 +392,26 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   resultCard: {
-    backgroundColor: '#1e1e1e',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: '#141f33',
+    borderRadius: 20,
+    padding: 22,
     marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.22,
+    shadowRadius: 14,
+    elevation: 10,
     borderWidth: 1,
-    borderColor: '#4CAF50',
+    borderColor: '#22416d',
   },
   resultImageContainer: {
-    marginBottom: 20,
+    marginBottom: 22,
     alignItems: 'center',
   },
   resultImage: {
     width: width - 80,
     height: width - 80,
-    borderRadius: 12,
+    borderRadius: 20,
     resizeMode: 'cover',
   },
   resultHeader: {
@@ -427,20 +451,21 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
   },
   modelInfo: {
-    backgroundColor: '#2a2a2a',
-    padding: 15,
-    borderRadius: 12,
+    backgroundColor: '#17223b',
+    padding: 16,
+    borderRadius: 14,
     marginBottom: 20,
   },
   modelLabel: {
-    fontSize: 14,
-    color: '#b0b0b0',
-    marginBottom: 5,
+    fontSize: 13,
+    color: '#9fb2d1',
+    marginBottom: 6,
+    letterSpacing: 0.4,
   },
   modelName: {
     fontSize: 16,
-    color: '#ffffff',
-    fontWeight: '500',
+    color: '#e6f1ff',
+    fontWeight: '600',
   },
   // Bottom Action Panel Styles
   actionPanel: {
