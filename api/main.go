@@ -133,6 +133,6 @@ func predictHandler(c *gin.Context) {
 	}
 
 	c.Data(200, "application/json", out)
-
+	log.Printf("Prediction output: %s", string(out))
 	log.Printf("Prediction completed successfully")
 }
