@@ -1,7 +1,8 @@
 model/images/*
 model/h5/*
-node_modules/
-client/node_modules/
+model/build/*
+model/build/bird_classifier_model_smoke.h5
+client/node_modules/*
 *.log
 .DS_Store
 .env
@@ -9,3 +10,4 @@ client/node_modules/
 .env.development.local
 .env.test.local
 .env.production.local
+/model/build/*.h5
