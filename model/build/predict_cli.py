@@ -17,6 +17,8 @@ import numpy as np
 from os import listdir
 from os.path import isdir, join
 
+TOP_N = 5
+
 
 def preprocess_image(image_path, target_size=(224, 224)):
     try:
@@ -97,10 +99,16 @@ def main():
     i = int(np.argmax(scores))
     predicted_class = labels[i] if 0 <= i < len(labels) else 'unknown'
 
+    # Rank every class by score so the client can show real alternatives,
+    # not just the single top pick re-labeled as a "top predictions" list.
+    ranked = sorted(zip(labels, scores), key=lambda pair: pair[1], reverse=True)
+    top_predictions = [{'class': label, 'score': score} for label, score in ranked[:TOP_N]]
+
     out = {
         'model_path': str(model_path),
         'predicted_class': predicted_class,
         'scores': scores,
+        'top_predictions': top_predictions,
     }
 
     print(json.dumps(out))

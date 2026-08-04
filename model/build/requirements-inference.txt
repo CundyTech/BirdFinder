@@ -1,0 +1,7 @@
+# For the ARM64 Windows inference host (what predict_cli.py actually runs
+# on, invoked by the Go API). TensorFlow has no installable wheel here —
+# onnxruntime does (verified: onnxruntime-1.28.0-cp311-cp311-win_arm64.whl).
+# Not used for training — see requirements.txt for that (the Windows VM).
+onnxruntime
+Pillow
+numpy

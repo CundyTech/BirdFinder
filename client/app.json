@@ -3,6 +3,13 @@
     "name": "BirdFinderClient",
     "slug": "BirdFinderClient",
     "version": "1.0.0",
-    "sdkVersion": "52.0.0"
+    "sdkVersion": "52.0.0",
+    "updates": {
+      "enabled": false
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-font"
+    ]
   }
 }

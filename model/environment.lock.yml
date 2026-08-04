@@ -81,7 +81,7 @@ dependencies:
       - six==1.17.0
       - tensorflow==2.21.0
       - termcolor==3.3.0
+      - tf2onnx
       - typing-extensions==4.15.0
       - urllib3==2.6.3
       - wrapt==2.1.2
-prefix: C:\Users\DanCu\miniforge3\envs\birdfinder

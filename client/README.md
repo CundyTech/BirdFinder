@@ -17,6 +17,12 @@ npm install
 npm start
 ```
 
+or 
+
+```bash
+npx expo start --host lan
+```
+
 3. Configure `API_URL` in `App.js` if you need to use your machine IP (e.g., `http://192.168.x.y:8080/predict`).
 
 Notes:

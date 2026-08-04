@@ -7,10 +7,11 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from tensorflow.keras.models import Sequential
 
 base_dir = Path(__file__).resolve().parent
-data_dir = (base_dir / '..' / 'images' / 'segmentations').resolve()
+data_dir = (base_dir / '..' / 'images' / 'uk_birds').resolve()
 
-if not data_dir.exists():
-    print(f"Data directory not found: {data_dir}")
+if not data_dir.exists() or not any(data_dir.iterdir()):
+    print(f"Data directory not found or empty: {data_dir}")
+    print("Run download_uk_bird_images.py first to populate it.")
     sys.exit(1)
 
 batch_size = 4
