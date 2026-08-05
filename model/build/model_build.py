@@ -14,6 +14,7 @@ Exports both a Keras .h5 and an ONNX model. The ONNX export is what the app
 actually needs — the deployment target for inference is Windows ARM64, where
 TensorFlow has no installable wheel, but onnxruntime does.
 """
+import argparse
 import json
 from pathlib import Path
 
@@ -25,13 +26,34 @@ from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    '--quick', action='store_true',
+    help='Small, fast run to validate the pipeline (train -> save -> ONNX export) works end to '
+         'end before committing CPU-hours to the full run. Not a usable model — output files get '
+         'a _quick suffix so they can never be mistaken for the real thing.'
+)
+args = parser.parse_args()
+
 # --- Config ---
 INPUT_SHAPE = (224, 224, 3)
 BATCH_SIZE = 32
-HEAD_EPOCHS = 20
-FINE_TUNE_EPOCHS = 10
 VALIDATION_SPLIT = 0.2
 FINE_TUNE_UNFREEZE_LAST_N_LAYERS = 30
+
+if args.quick:
+    print("=== QUICK MODE: reduced epochs/steps to validate the pipeline — not a usable model ===\n")
+    HEAD_EPOCHS = 3
+    FINE_TUNE_EPOCHS = 2
+    MAX_STEPS_PER_EPOCH = 20
+    MAX_VALIDATION_STEPS = 5
+    MODEL_NAME = 'bird_classifier_model_quick'
+else:
+    HEAD_EPOCHS = 20
+    FINE_TUNE_EPOCHS = 10
+    MAX_STEPS_PER_EPOCH = None
+    MAX_VALIDATION_STEPS = None
+    MODEL_NAME = 'bird_classifier_model'
 
 base_dir = Path(__file__).resolve().parent
 data_dir = (base_dir / '..' / 'images' / 'uk_birds').resolve()
@@ -94,6 +116,14 @@ validation_generator = val_datagen.flow_from_directory(
 print(f"Found {train_generator.samples} training images, "
       f"{validation_generator.samples} validation images, {num_classes} classes")
 
+train_steps = max(1, train_generator.samples // BATCH_SIZE)
+if MAX_STEPS_PER_EPOCH:
+    train_steps = min(train_steps, MAX_STEPS_PER_EPOCH)
+
+val_steps = max(1, validation_generator.samples // BATCH_SIZE)
+if MAX_VALIDATION_STEPS:
+    val_steps = min(val_steps, MAX_VALIDATION_STEPS)
+
 # Persist the exact label order the model was trained with. Inference must
 # read this file rather than re-deriving order by listing the data
 # directory — that only happens to match if the sort order and directory
@@ -124,10 +154,10 @@ model.compile(
 )
 model.fit(
     train_generator,
-    steps_per_epoch=max(1, train_generator.samples // BATCH_SIZE),
+    steps_per_epoch=train_steps,
     epochs=HEAD_EPOCHS,
     validation_data=validation_generator,
-    validation_steps=max(1, validation_generator.samples // BATCH_SIZE),
+    validation_steps=val_steps,
     callbacks=callbacks,
 )
 
@@ -143,10 +173,10 @@ model.compile(
 )
 history = model.fit(
     train_generator,
-    steps_per_epoch=max(1, train_generator.samples // BATCH_SIZE),
+    steps_per_epoch=train_steps,
     epochs=FINE_TUNE_EPOCHS,
     validation_data=validation_generator,
-    validation_steps=max(1, validation_generator.samples // BATCH_SIZE),
+    validation_steps=val_steps,
     callbacks=callbacks,
 )
 
@@ -154,14 +184,14 @@ final_val_acc = history.history.get('val_accuracy', [None])[-1]
 print(f"\nFinal validation accuracy: {final_val_acc}")
 
 # --- Save ---
-h5_path = out_dir / 'bird_classifier_model.h5'
+h5_path = out_dir / f'{MODEL_NAME}.h5'
 model.save(str(h5_path))
 print(f"Saved Keras model to {h5_path}")
 
 try:
     import tf2onnx
 
-    onnx_path = out_dir / 'bird_classifier_model.onnx'
+    onnx_path = out_dir / f'{MODEL_NAME}.onnx'
     spec = (tf.TensorSpec((None, *INPUT_SHAPE), tf.float32, name='input'),)
     tf2onnx.convert.from_keras(model, input_signature=spec, output_path=str(onnx_path))
     print(f"Saved ONNX model to {onnx_path}")
@@ -169,3 +199,7 @@ except ImportError:
     print("\ntf2onnx not installed — skipping ONNX export.")
     print("Install it with: pip install tf2onnx")
     print("Then re-run this script (or add a standalone conversion step) to produce the .onnx file.")
+
+if args.quick:
+    print("\n=== QUICK MODE run complete — this is NOT a usable model. ===")
+    print("If everything above ran cleanly, re-run without --quick for the real training run.")

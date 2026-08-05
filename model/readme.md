@@ -50,7 +50,16 @@ python model\build\download_uk_bird_images.py
 conda run -n birdfinder python model\build\train_smoke.py
 ```
 
- - **3. Full training** (transfer learning on MobileNetV2; exports both `.h5` and `.onnx`):
+ - **3. Validate the full pipeline on a reduced scope** (few epochs, capped steps — output gets a
+   `_quick` suffix so it can't be mistaken for a real model. Native Windows TensorFlow is CPU-only
+   as of 2.11+ regardless of GPU hardware present, so this step is worth doing before committing to
+   the much longer full run):
+
+```powershell
+conda run -n birdfinder python model\build\model_build.py --quick
+```
+
+ - **4. Full training** (transfer learning on MobileNetV2; exports both `.h5` and `.onnx`):
 
 ```powershell
 conda run -n birdfinder python model\build\model_build.py
