@@ -46,7 +46,7 @@ SPECIES = [
     ("Prunella modularis", "Dunnock"),
     ("Fringilla coelebs", "Eurasian_Chaffinch"),
     ("Carduelis carduelis", "European_Goldfinch"),
-    ("Chloris chloris", "Eurasian_Greenfinch"),
+    ("Carduelis chloris", "Eurasian_Greenfinch"),  # "Chloris chloris" is ambiguous in GBIF (13+ duplicate entries)
     ("Pyrrhula pyrrhula", "Eurasian_Bullfinch"),
     ("Aegithalos caudatus", "Long_tailed_Tit"),
     ("Periparus ater", "Coal_Tit"),
@@ -118,6 +118,10 @@ def get_taxon_key(scientific_name):
     result = http_get_json(GBIF_MATCH_URL, {"name": scientific_name, "strict": "true"})
     if result.get("matchType") in (None, "NONE"):
         return None
+    # A SYNONYM match resolves to its own usage key, which occurrence search
+    # can behave inconsistently with — prefer the canonical accepted key.
+    if result.get("status") == "SYNONYM" and result.get("acceptedUsageKey"):
+        return result["acceptedUsageKey"]
     return result.get("usageKey")
 
 
