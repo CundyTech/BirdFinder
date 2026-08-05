@@ -140,6 +140,11 @@ def iter_occurrence_media(taxon_key, needed, seen_urls):
             license_ = record.get("license", "")
             attribution = record.get("recordedBy", "") or record.get("rightsHolder", "")
             for media in record.get("media", []):
+                # mediaType=StillImage on the search only guarantees a record has
+                # *at least one* image — individual media items on that same
+                # record can still be audio (e.g. xeno-canto) or video.
+                if media.get("type") != "StillImage":
+                    continue
                 image_url = media.get("identifier")
                 if not image_url or image_url in seen_urls:
                     continue
