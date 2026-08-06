@@ -38,8 +38,7 @@ def preprocess_image(image_path, target_size=TARGET_SIZE):
 
     img = img.resize(target_size)
     img_array = np.array(img).astype(np.float32)
-    # Must match training preprocessing exactly — MobileNetV2's
-    # preprocess_input scales to [-1, 1], not the more common [0, 1].
+    # MobileNetV2's preprocess_input scales pixels to [-1, 1] — must match model_build.py exactly.
     img_array = (img_array / 127.5) - 1.0
     return np.expand_dims(img_array, axis=0)
 

@@ -1,9 +1,7 @@
 """Trains the UK bird classifier.
 
 Run download_uk_bird_images.py first to populate ../images/uk_birds — this
-script trains on real photos there, not the CUB-200 segmentation masks the
-old version pointed at (those are silhouettes with no color/texture info,
-useless for a real classifier).
+script trains on real photos there.
 
 Uses transfer learning on MobileNetV2 rather than a from-scratch CNN: with
 only ~100-200 images per class, a from-scratch network doesn't have enough
