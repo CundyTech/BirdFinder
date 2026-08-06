@@ -10,6 +10,7 @@ import PlaceholderCard from '../components/PlaceholderCard';
 import ImageCard from '../components/ImageCard';
 import LoadingCard from '../components/LoadingCard';
 import ResultCard from '../components/ResultCard';
+import BirdPatternBackground from '../components/BirdPatternBackground';
 
 const API_URL = `${API_BASE}/predict`;
 
@@ -121,6 +122,8 @@ export default function HomeScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
+            <BirdPatternBackground />
+
             <StatusBar barStyle="light-content"
                 backgroundColor={styles.header.backgroundColor}
                 showHideTransition={'slide'}
