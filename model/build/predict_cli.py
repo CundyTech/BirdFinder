@@ -3,63 +3,45 @@
 
 Usage: python predict_cli.py --image /path/to/image.jpg
 
-This script loads the trained model from ../h5 (falls back to the smoke model),
-resizes the provided image to the model input size, runs prediction, and prints a
-JSON object with `predicted_class` and `scores`.
+Loads the trained model from ../h5/bird_classifier_model.onnx and its label
+order from ../h5/labels.json, runs real inference via onnxruntime, and
+prints a JSON object with `predicted_class`, `scores`, and `top_predictions`.
+
+Runs on ONNX rather than TensorFlow directly because this script executes on
+Windows ARM64 (see api/main.go), where TensorFlow has no installable wheel at
+all. The model is trained elsewhere (see model/readme.md) and exported to
+ONNX for exactly this reason — onnxruntime does ship a native win_arm64
+wheel.
 """
 import argparse
+import io
 import json
-import random
 from pathlib import Path
-from PIL import Image
+
 import numpy as np
-# import tensorflow as tf  # Commented out due to ARM64 compatibility issues
-from os import listdir
-from os.path import isdir, join
+import onnxruntime as ort
+from PIL import Image
 
 TOP_N = 5
+TARGET_SIZE = (224, 224)
 
 
-def preprocess_image(image_path, target_size=(224, 224)):
+def preprocess_image(image_path, target_size=TARGET_SIZE):
     try:
         img = Image.open(image_path).convert('RGB')
-        img = img.resize(target_size)
-        img_array = np.array(img) / 255.0
-        img_array = np.expand_dims(img_array, axis=0)
-        return img_array
-    except Exception as e:
-        # Try to open without relying on file extension
-        import io
+    except Exception:
+        # Some uploads arrive without a reliable extension/format hint —
+        # retry via BytesIO rather than trusting the file extension.
         with open(image_path, 'rb') as f:
             img_data = f.read()
-        try:
-            img = Image.open(io.BytesIO(img_data)).convert('RGB')
-            img = img.resize(target_size)
-            img_array = np.array(img) / 255.0
-            img_array = np.expand_dims(img_array, axis=0)
-            return img_array
-        except Exception as e2:
-            raise Exception(f"Failed to open image: {e}, also failed with BytesIO: {e2}")
+        img = Image.open(io.BytesIO(img_data)).convert('RGB')
 
-
-def load_model(base_dir):
-    # Mock model loading since TensorFlow is not available on ARM64 Windows
-    model_path = (base_dir / '..' / 'h5' / 'bird_classifier_model_smoke.h5').resolve()
-    if not model_path.exists():
-        model_path = (base_dir / '..' / 'h5' / 'bird_classifier_model.h5').resolve()
-    # Return mock model object
-    return {"mock": True}, model_path
-
-
-def get_labels(base_dir):
-    labels_dir = str((base_dir / '..' / 'images' / 'segmentations').resolve())
-    try:
-        labels = [d for d in listdir(labels_dir) if isdir(join(labels_dir, d))]
-        labels.sort()
-        return labels
-    except:
-        # Fallback labels if directory not found
-        return ['American_Goldfinch', 'American_Robin', 'Blue_Jay', 'Cardinal', 'Sparrow']
+    img = img.resize(target_size)
+    img_array = np.array(img).astype(np.float32)
+    # Must match training preprocessing exactly — MobileNetV2's
+    # preprocess_input scales to [-1, 1], not the more common [0, 1].
+    img_array = (img_array / 127.5) - 1.0
+    return np.expand_dims(img_array, axis=0)
 
 
 def main():
@@ -68,39 +50,39 @@ def main():
     args = parser.parse_args()
 
     base_dir = Path(__file__).resolve().parent
+    h5_dir = (base_dir / '..' / 'h5').resolve()
+    model_path = h5_dir / 'bird_classifier_model.onnx'
+    labels_path = h5_dir / 'labels.json'
 
-    # Verify image can be opened
-    try:
-        img_array = preprocess_image(args.image)
-        # Removed stderr output that was interfering with JSON parsing
-    except Exception as e:
-        # Return error result
-        out = {
-            'model_path': 'mock_model',
-            'predicted_class': 'error_processing_image',
-            'scores': [0.0] * 10,
-            'error': str(e)
-        }
-        print(json.dumps(out))
+    if not model_path.exists() or not labels_path.exists():
+        print(json.dumps({
+            'error': f'No trained model found (expected {model_path} and {labels_path}). '
+                     f'See model/readme.md to train one and copy both files here.',
+            'predicted_class': 'model_not_trained',
+            'scores': [],
+        }))
         return
 
-    model, model_path = load_model(base_dir)
+    try:
+        img_array = preprocess_image(args.image)
+    except Exception as e:
+        print(json.dumps({
+            'error': f'Failed to process image: {e}',
+            'predicted_class': 'error_processing_image',
+            'scores': [],
+        }))
+        return
 
-    # Mock prediction - return random scores
-    labels = get_labels(base_dir)
-    num_classes = len(labels)
+    labels = json.loads(labels_path.read_text(encoding='utf-8'))
 
-    # Generate random scores that sum to 1 (like softmax output)
-    scores = np.random.random(num_classes)
-    scores = scores / scores.sum()  # Normalize to sum to 1
-    scores = scores.tolist()
+    session = ort.InferenceSession(str(model_path), providers=['CPUExecutionProvider'])
+    input_name = session.get_inputs()[0].name
+    output_name = session.get_outputs()[0].name
+    scores = session.run([output_name], {input_name: img_array})[0][0].tolist()
 
-    # Pick the class with highest score
     i = int(np.argmax(scores))
     predicted_class = labels[i] if 0 <= i < len(labels) else 'unknown'
 
-    # Rank every class by score so the client can show real alternatives,
-    # not just the single top pick re-labeled as a "top predictions" list.
     ranked = sorted(zip(labels, scores), key=lambda pair: pair[1], reverse=True)
     top_predictions = [{'class': label, 'score': score} for label, score in ranked[:TOP_N]]
 
