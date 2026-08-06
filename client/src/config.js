@@ -3,7 +3,7 @@ export const API_BASE = 'http://192.168.01.50:8080';
 
 // Below this confidence (%), the low-confidence warning banner shows,
 // suggesting a retake.
-export const LOW_CONFIDENCE_THRESHOLD = 50;
+export const LOW_CONFIDENCE_THRESHOLD = 90;
 
 // Below this stricter confidence (%), the app won't auto-guess a species at
 // all — it shows improvement tips and a tappable list of candidates instead

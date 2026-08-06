@@ -257,10 +257,6 @@ const styles = StyleSheet.create({
     color: PALETTE.textOnDark,
     fontSize: 15,
   },
-  predictionPercent: {
-    color: PALETTE.primary,
-    fontWeight: '700',
-  },
   predictionBarTrack: {
     height: 4,
     borderRadius: 2,
@@ -350,8 +346,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     width: '100%',
   },
-  newPhotoButton: {
-    marginTop: 16,
+  resultFooter: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 12,
+    backgroundColor: PALETTE.bg,
+    borderTopWidth: 1,
+    borderTopColor: PALETTE.cardBorder,
   },
   loadingCard: {
     backgroundColor: PALETTE.card,
@@ -375,12 +377,9 @@ const styles = StyleSheet.create({
   },
   resultCard: {
     backgroundColor: PALETTE.card,
-    borderRadius: 12,
     padding: 14,
-    marginHorizontal: -8,
+    marginHorizontal: -20,
     marginBottom: 14,
-    borderWidth: 1,
-    borderColor: PALETTE.cardBorder,
   },
   resultImageContainer: {
     marginBottom: 22,

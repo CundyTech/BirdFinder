@@ -196,19 +196,19 @@ export default function HomeScreen() {
                 {/* Loading state */}
                 {loading && <LoadingCard />}
 
-                {/* Identify another bird / back to home */}
-                {result && !loading && (
-                    <View style={[styles.errorButtonRow, styles.newPhotoButton]}>
-                        <TouchableOpacity style={styles.resultActionButton} onPress={pickImage}>
-                            <Text style={styles.resultActionText}>Identify Another Bird</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.resultActionButtonSecondary} onPress={resetToHome}>
-                            <Text style={styles.resultActionTextSecondary}>Back to Home</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-
             </ScrollView>
+
+            {/* Identify another bird / back to home — fixed to the bottom, like Header is fixed to the top */}
+            {result && !loading && (
+                <View style={styles.resultFooter}>
+                    <TouchableOpacity style={styles.resultActionButton} onPress={pickImage}>
+                        <Text style={styles.resultActionText}>Identify Another Bird</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.resultActionButtonSecondary} onPress={resetToHome}>
+                        <Text style={styles.resultActionTextSecondary}>Back to Home</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
 
         </SafeAreaView>
     );

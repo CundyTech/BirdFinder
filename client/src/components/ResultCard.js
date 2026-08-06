@@ -46,12 +46,13 @@ export default function ResultCard({ uri, result }) {
     : topConfidencePercent;
   const headerName = headerCandidate ? formatBirdName(headerCandidate.class) : 'Uncertain match';
   const isLowConfidence = displayScorePercent < LOW_CONFIDENCE_THRESHOLD;
+  const confidenceLabel = isLowConfidence ? 'Possible match' : 'Strong match';
   const isUserPick = isUncertain && Boolean(selectedCandidate);
 
   const predictionsBlock = (
     <View style={styles.predictionsCard}>
       <Text style={styles.predictionsTitle}>
-        {isUncertain ? 'Possible matches — tap one to see details' : 'Top predictions'}
+        {isUncertain ? 'Which one looks right? Tap to compare' : 'Similar species'}
       </Text>
       {topPredictions.slice(0, 3).map((p, i, arr) => {
         const isLast = i === arr.length - 1;
@@ -69,7 +70,6 @@ export default function ResultCard({ uri, result }) {
                 <Text style={styles.predictionRankText}>{i + 1}</Text>
               </View>
               <Text style={styles.predictionLabel}>{formatBirdName(p.class)}</Text>
-              <Text style={styles.predictionPercent}>{scorePercent.toFixed(1)}%</Text>
             </View>
             <View style={styles.predictionBarTrack}>
               <View style={[styles.predictionBarFill, { width: `${scorePercent}%` }]} />
@@ -86,7 +86,7 @@ export default function ResultCard({ uri, result }) {
             onPress={() => setSelectedCandidate(isSelected ? null : p)}
             accessibilityRole="button"
             accessibilityState={{ selected: isSelected }}
-            accessibilityLabel={`${formatBirdName(p.class)}, ${scorePercent.toFixed(1)} percent confidence${isSelected ? ', selected' : ''}`}
+            accessibilityLabel={`${formatBirdName(p.class)}${isSelected ? ', selected' : ''}`}
           >
             {row}
           </TouchableOpacity>
@@ -99,19 +99,21 @@ export default function ResultCard({ uri, result }) {
     <View style={styles.resultCard}>
       <View style={styles.resultHeaderRow}>
         <Text style={styles.birdName}>{headerName}</Text>
-        <View style={[styles.confidenceBadge, isLowConfidence && styles.confidenceBadgeLow]}>
-          <Text style={[styles.confidenceText, isLowConfidence && styles.confidenceTextLow]}>{displayScorePercent}%</Text>
-        </View>
+        {headerCandidate && (
+          <View style={[styles.confidenceBadge, isLowConfidence && styles.confidenceBadgeLow]}>
+            <Text style={[styles.confidenceText, isLowConfidence && styles.confidenceTextLow]}>{confidenceLabel}</Text>
+          </View>
+        )}
       </View>
 
       {isUncertain ? (
         <View style={styles.tipsCard}>
           <View style={styles.tipsHeaderRow}>
-            <Feather name="alert-triangle" size={18} color={styles.PALETTE.accent} />
-            <Text style={styles.tipsTitle}>Not confident enough to guess</Text>
+            <Feather name="camera" size={18} color={styles.PALETTE.accent} />
+            <Text style={styles.tipsTitle}>We need a clearer look</Text>
           </View>
           <Text style={styles.tipsText}>
-            The model isn't sure enough to identify this automatically. For a better result, try:
+            We couldn't get a confident match from this photo. For a better result, try:
           </Text>
           <Text style={styles.tipsListItem}>• Getting closer to the bird</Text>
           <Text style={styles.tipsListItem}>• Even, natural lighting</Text>
@@ -122,7 +124,7 @@ export default function ResultCard({ uri, result }) {
         isLowConfidence && (
           <View style={styles.lowConfidenceBanner}>
             <Text style={styles.lowConfidenceText}>
-              Low confidence match — try a closer, well-lit photo for a more accurate result.
+              This might not be quite right — try a closer, well-lit photo for a better match.
             </Text>
           </View>
         )
@@ -132,9 +134,9 @@ export default function ResultCard({ uri, result }) {
 
       {isUserPick && (
         <View style={styles.userPickBanner}>
-          <Feather name="alert-circle" size={16} color={styles.PALETTE.accent} />
+          <Feather name="info" size={16} color={styles.PALETTE.accent} />
           <Text style={styles.userPickText}>
-            You picked this — confidence was only {displayScorePercent}%. This is not a confirmed identification.
+            You selected this option — it's not a confirmed match.
           </Text>
         </View>
       )}
