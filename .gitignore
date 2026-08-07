@@ -4,6 +4,7 @@ model/build/bird_classifier_model_smoke.h5
 __pycache__/
 client/node_modules/*
 client/.expo/*
+client/android/local.properties
 *.log
 .DS_Store
 .env
