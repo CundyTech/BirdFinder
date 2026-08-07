@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import styles from '../styles';
 import SpeciesReferenceCard from './SpeciesReferenceCard';
+import ImageLightbox from './ImageLightbox';
 import { LOW_CONFIDENCE_THRESHOLD, UNCERTAIN_THRESHOLD, DEBUG_ALWAYS_SHOW_SPECIES_DETAILS } from '../config';
 
 export default function ResultCard({ uri, result }) {
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [viewerOpen, setViewerOpen] = useState(false);
 
   if (!result) return null;
 
@@ -25,127 +26,91 @@ export default function ResultCard({ uri, result }) {
 
   // Below UNCERTAIN_THRESHOLD we don't auto-guess a species at all — the
   // top-1 pick is too shaky to present as a confident identification. We
-  // show tips + a tappable candidate list instead, and only reveal species
-  // detail once the user picks one themselves.
+  // show tips instead of a name/photo/stats we can't stand behind.
   const isUncertain = !DEBUG_ALWAYS_SHOW_SPECIES_DETAILS && topConfidencePercent < UNCERTAIN_THRESHOLD;
 
-  // The backend ranks every class server-side and sends the real top few —
-  // falls back to a single entry only if an older backend build is running.
+  const lightbox = (
+    <ImageLightbox uri={viewerOpen ? uri : null} label="Your photo, full screen" onClose={() => setViewerOpen(false)} />
+  );
+
+  if (isUncertain) {
+    return (
+      <View style={[styles.resultCard, styles.resultCardFill]}>
+        <View style={styles.uncertainHeaderRow}>
+          <Feather name="camera" size={22} color={styles.PALETTE.accent} />
+          <Text style={styles.uncertainHeaderTitle}>We need a clearer look</Text>
+        </View>
+        <Text style={styles.uncertainHeaderSubtitle}>
+          Try getting closer, using even lighting, and holding the camera steady.
+        </Text>
+
+        {uri && (
+          <TouchableOpacity
+            style={styles.uncertainImageWrapper}
+            onPress={() => setViewerOpen(true)}
+            accessibilityRole="imagebutton"
+            accessibilityLabel="View your photo larger"
+          >
+            <Image source={{ uri }} style={styles.uncertainImage} />
+          </TouchableOpacity>
+        )}
+
+        {lightbox}
+      </View>
+    );
+  }
+
+  const headerCandidate = { class: result.predicted_class, score: getMaxScore() };
+  const displayScorePercent = Number((headerCandidate.score * 100).toFixed(1));
+  const headerName = formatBirdName(headerCandidate.class);
+  const isLowConfidence = displayScorePercent < LOW_CONFIDENCE_THRESHOLD;
+  const confidenceLabel = isLowConfidence ? 'Possible match' : 'Strong match';
+
   const topPredictions = Array.isArray(result.top_predictions) && result.top_predictions.length > 0
     ? result.top_predictions
     : [{ class: result.predicted_class, score: getMaxScore() }];
-
-  // What we actually show a name/badge/detail card for: the model's top
-  // pick when we trust it, or whatever the user tapped when we don't.
-  const headerCandidate = !isUncertain
-    ? { class: result.predicted_class, score: getMaxScore() }
-    : selectedCandidate;
-
-  const displayScorePercent = headerCandidate
-    ? Number((headerCandidate.score * 100).toFixed(1))
-    : topConfidencePercent;
-  const headerName = headerCandidate ? formatBirdName(headerCandidate.class) : 'Uncertain match';
-  const isLowConfidence = displayScorePercent < LOW_CONFIDENCE_THRESHOLD;
-  const confidenceLabel = isLowConfidence ? 'Possible match' : 'Strong match';
-  const isUserPick = isUncertain && Boolean(selectedCandidate);
-
-  const predictionsBlock = (
-    <View style={styles.predictionsCard}>
-      <Text style={styles.predictionsTitle}>
-        {isUncertain ? 'Which one looks right? Tap to compare' : 'Similar species'}
-      </Text>
-      {topPredictions.slice(0, 3).map((p, i, arr) => {
-        const isLast = i === arr.length - 1;
-        const isSelected = isUncertain && selectedCandidate?.class === p.class;
-        const rowStyle = [
-          styles.predictionRow,
-          isLast && styles.predictionRowLast,
-          isSelected && styles.predictionRowSelected,
-        ];
-        const scorePercent = Math.min((p.score || 0) * 100, 100);
-        const row = (
-          <>
-            <View style={styles.predictionRowTop}>
-              <View style={styles.predictionRank}>
-                <Text style={styles.predictionRankText}>{i + 1}</Text>
-              </View>
-              <Text style={styles.predictionLabel}>{formatBirdName(p.class)}</Text>
-            </View>
-            <View style={styles.predictionBarTrack}>
-              <View style={[styles.predictionBarFill, { width: `${scorePercent}%` }]} />
-            </View>
-          </>
-        );
-        if (!isUncertain) {
-          return <View key={p.class || i} style={rowStyle}>{row}</View>;
-        }
-        return (
-          <TouchableOpacity
-            key={p.class || i}
-            style={rowStyle}
-            onPress={() => setSelectedCandidate(isSelected ? null : p)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: isSelected }}
-            accessibilityLabel={`${formatBirdName(p.class)}${isSelected ? ', selected' : ''}`}
-          >
-            {row}
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
 
   return (
     <View style={styles.resultCard}>
       <View style={styles.resultHeaderRow}>
         <Text style={styles.birdName}>{headerName}</Text>
-        {headerCandidate && (
-          <View style={[styles.confidenceBadge, isLowConfidence && styles.confidenceBadgeLow]}>
-            <Text style={[styles.confidenceText, isLowConfidence && styles.confidenceTextLow]}>{confidenceLabel}</Text>
-          </View>
-        )}
+        <View style={[styles.confidenceBadge, isLowConfidence && styles.confidenceBadgeLow]}>
+          <Text style={[styles.confidenceText, isLowConfidence && styles.confidenceTextLow]}>{confidenceLabel}</Text>
+        </View>
       </View>
 
-      {isUncertain ? (
-        <View style={styles.tipsCard}>
-          <View style={styles.tipsHeaderRow}>
-            <Feather name="camera" size={18} color={styles.PALETTE.accent} />
-            <Text style={styles.tipsTitle}>We need a clearer look</Text>
-          </View>
-          <Text style={styles.tipsText}>
-            We couldn't get a confident match from this photo. For a better result, try:
-          </Text>
-          <Text style={styles.tipsListItem}>• Getting closer to the bird</Text>
-          <Text style={styles.tipsListItem}>• Even, natural lighting</Text>
-          <Text style={styles.tipsListItem}>• Holding the camera steady</Text>
-          <Text style={styles.tipsListItem}>• Framing the bird without obstructions</Text>
-        </View>
-      ) : (
-        isLowConfidence && (
-          <View style={styles.lowConfidenceBanner}>
-            <Text style={styles.lowConfidenceText}>
-              This might not be quite right — try a closer, well-lit photo for a better match.
-            </Text>
-          </View>
-        )
-      )}
-
-      {isUncertain && predictionsBlock}
-
-      {isUserPick && (
-        <View style={styles.userPickBanner}>
-          <Feather name="info" size={16} color={styles.PALETTE.accent} />
-          <Text style={styles.userPickText}>
-            You selected this option — it's not a confirmed match.
+      {isLowConfidence && (
+        <View style={styles.lowConfidenceBanner}>
+          <Text style={styles.lowConfidenceText}>
+            This might not be quite right — try a closer, well-lit photo for a better match.
           </Text>
         </View>
       )}
 
-      {headerCandidate && (
-        <SpeciesReferenceCard commonName={formatBirdName(headerCandidate.class)} yourPhotoUri={uri} />
-      )}
+      <SpeciesReferenceCard commonName={headerName} yourPhotoUri={uri} />
 
-      {!isUncertain && predictionsBlock}
+      <View style={styles.predictionsCard}>
+        <Text style={styles.predictionsTitle}>Similar species</Text>
+        {topPredictions.slice(0, 3).map((p, i, arr) => {
+          const isLast = i === arr.length - 1;
+          const scorePercent = Math.min((p.score || 0) * 100, 100);
+          return (
+            <View key={p.class || i} style={[styles.predictionRow, isLast && styles.predictionRowLast]}>
+              <View style={styles.predictionRowTop}>
+                <View style={styles.predictionRank}>
+                  <Text style={styles.predictionRankText}>{i + 1}</Text>
+                </View>
+                <Text style={styles.predictionLabel}>{formatBirdName(p.class)}</Text>
+              </View>
+              <View style={styles.predictionBarTrack}>
+                <View style={[styles.predictionBarFill, { width: `${scorePercent}%` }]} />
+              </View>
+            </View>
+          );
+        })}
+      </View>
+
+      {lightbox}
     </View>
   );
 }

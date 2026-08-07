@@ -14,13 +14,15 @@ TensorFlow has no installable wheel, but onnxruntime does.
 """
 import argparse
 import json
+from collections import Counter
 from pathlib import Path
 
 import tensorflow as tf
 from tensorflow.keras.applications import MobileNetV2
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.layers import Dense, Dropout, GlobalAveragePooling2D
+from tensorflow.keras.losses import CategoricalCrossentropy
 from tensorflow.keras.models import Model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
@@ -37,7 +39,7 @@ args = parser.parse_args()
 INPUT_SHAPE = (224, 224, 3)
 BATCH_SIZE = 32
 VALIDATION_SPLIT = 0.2
-FINE_TUNE_UNFREEZE_LAST_N_LAYERS = 30
+FINE_TUNE_UNFREEZE_LAST_N_LAYERS = 50
 
 if args.quick:
     print("=== QUICK MODE: reduced epochs/steps to validate the pipeline — not a usable model ===\n")
@@ -47,8 +49,8 @@ if args.quick:
     MAX_VALIDATION_STEPS = 5
     MODEL_NAME = 'bird_classifier_model_quick'
 else:
-    HEAD_EPOCHS = 20
-    FINE_TUNE_EPOCHS = 10
+    HEAD_EPOCHS = 25
+    FINE_TUNE_EPOCHS = 15
     MAX_STEPS_PER_EPOCH = None
     MAX_VALIDATION_STEPS = None
     MODEL_NAME = 'bird_classifier_model'
@@ -81,6 +83,7 @@ train_datagen = ImageDataGenerator(
     height_shift_range=0.2,
     shear_range=0.15,
     zoom_range=0.2,
+    brightness_range=[0.75, 1.25],
     horizontal_flip=True,
     fill_mode='nearest',
     validation_split=VALIDATION_SPLIT,
@@ -131,6 +134,15 @@ labels_path = out_dir / 'labels.json'
 labels_path.write_text(json.dumps(labels_by_index, indent=2), encoding='utf-8')
 print(f"Saved {len(labels_by_index)} labels to {labels_path}")
 
+# Some species inevitably end up with fewer images than others (GBIF
+# availability varies per species) — weight underrepresented classes higher
+# so the model isn't just biased toward whichever species has the most photos.
+class_counts = Counter(train_generator.classes)
+class_weight = {
+    cls: len(train_generator.classes) / (num_classes * count)
+    for cls, count in class_counts.items()
+}
+
 # --- Model: MobileNetV2 base + custom classification head ---
 base_model = MobileNetV2(input_shape=INPUT_SHAPE, include_top=False, weights='imagenet')
 base_model.trainable = False
@@ -142,12 +154,19 @@ x = Dropout(0.3)(x)
 predictions = Dense(num_classes, activation='softmax')(x)
 model = Model(inputs=base_model.input, outputs=predictions)
 
-callbacks = [EarlyStopping(monitor='val_accuracy', patience=4, restore_best_weights=True)]
+# Label smoothing trades a little training confidence for better generalization
+# — useful here since several species look genuinely similar to each other.
+loss = CategoricalCrossentropy(label_smoothing=0.1)
+
+callbacks = [
+    EarlyStopping(monitor='val_accuracy', patience=4, restore_best_weights=True),
+    ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=2, min_lr=1e-7),
+]
 
 print("\n=== Stage 1: training classification head (MobileNetV2 base frozen) ===")
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
-    loss='categorical_crossentropy',
+    loss=loss,
     metrics=['accuracy'],
 )
 model.fit(
@@ -157,6 +176,7 @@ model.fit(
     validation_data=validation_generator,
     validation_steps=val_steps,
     callbacks=callbacks,
+    class_weight=class_weight,
 )
 
 print("\n=== Stage 2: fine-tuning top layers of MobileNetV2 ===")
@@ -166,7 +186,7 @@ for layer in base_model.layers[:-FINE_TUNE_UNFREEZE_LAST_N_LAYERS]:
 
 model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),  # small LR — don't wreck pretrained weights
-    loss='categorical_crossentropy',
+    loss=loss,
     metrics=['accuracy'],
 )
 history = model.fit(
@@ -176,6 +196,7 @@ history = model.fit(
     validation_data=validation_generator,
     validation_steps=val_steps,
     callbacks=callbacks,
+    class_weight=class_weight,
 )
 
 final_val_acc = history.history.get('val_accuracy', [None])[-1]

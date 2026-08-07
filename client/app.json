@@ -9,7 +9,20 @@
     },
     "plugins": [
       "expo-asset",
-      "expo-font"
-    ]
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "Allow BirdFinder to access your camera to identify birds.",
+          "microphonePermission": false
+        }
+      ]
+    ],
+    "android": {
+      "package": "com.cundytech.birdfinder"
+    },
+    "ios": {
+      "bundleIdentifier": "com.cundytech.birdfinder"
+    }
   }
 }

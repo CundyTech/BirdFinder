@@ -13,3 +13,7 @@ export const UNCERTAIN_THRESHOLD = 30;
 // Debug: force species detail to always show for the top guess, bypassing
 // the uncertain-result flow above regardless of actual confidence.
 export const DEBUG_ALWAYS_SHOW_SPECIES_DETAILS = false;
+
+// Minimum time the loading screen stays up, even if the server responds
+// faster — avoids a jarring flash on quick responses.
+export const MIN_LOADING_DURATION_MS = 5000;

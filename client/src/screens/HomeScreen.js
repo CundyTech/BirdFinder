@@ -3,7 +3,7 @@ import { SafeAreaView, ScrollView, StatusBar, View, Text, TouchableOpacity, Aler
 import * as ImagePicker from 'expo-image-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import styles from '../styles';
-import { API_BASE } from '../config';
+import { API_BASE, MIN_LOADING_DURATION_MS } from '../config';
 
 import Header from '../components/Header';
 import PlaceholderCard from '../components/PlaceholderCard';
@@ -55,6 +55,7 @@ export default function HomeScreen() {
         setLoading(true);
         setResult(null);
         setError(null);
+        const startedAt = Date.now();
         try {
             const localUri = uri;
             const filename = localUri.split('/').pop();
@@ -85,6 +86,10 @@ export default function HomeScreen() {
         } catch (err) {
             setError(err.message || 'Something went wrong. Please try again.');
         } finally {
+            const remaining = MIN_LOADING_DURATION_MS - (Date.now() - startedAt);
+            if (remaining > 0) {
+                await new Promise((resolve) => setTimeout(resolve, remaining));
+            }
             setLoading(false);
         }
     };
@@ -140,7 +145,7 @@ export default function HomeScreen() {
                 {result && !loading && <ResultCard uri={imageUri} result={result} />}
 
                 {/* Photo or placeholder */}
-                {!result && imageUri && <ImageCard uri={imageUri} />}
+                {!result && !loading && imageUri && <ImageCard uri={imageUri} />}
                 {!result && !imageUri && (
                     <>
                         <TouchableOpacity style={styles.heroCard} onPress={pickImage} activeOpacity={0.85}>
