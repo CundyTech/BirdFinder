@@ -9,9 +9,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/time/rate"
 )
 
 // maxUploadSize caps the /predict request body. Phone camera photos are
@@ -19,6 +21,50 @@ import (
 // to unbounded uploads. Declared as a var (not const) so tests can shrink it
 // rather than uploading real multi-megabyte payloads.
 var maxUploadSize int64 = 10 << 20 // 10 MB
+
+// Per-IP rate limit for /predict, the endpoint that spawns a Python
+// subprocess per request. rateLimitBurst allows a short run of requests
+// (e.g. someone taking a few photos in a row) before the sustained
+// rateLimitRPS refill rate kicks in. Declared as vars so tests can shrink
+// them instead of needing to wait on real time windows.
+var (
+	rateLimitRPS   rate.Limit = 1
+	rateLimitBurst int        = 5
+)
+
+// ipRateLimiter hands out one token-bucket limiter per client IP. A fresh
+// instance is created per newRouter() call (rather than a package-level
+// singleton) so each test gets isolated state.
+type ipRateLimiter struct {
+	mu       sync.Mutex
+	limiters map[string]*rate.Limiter
+}
+
+func newIPRateLimiter() *ipRateLimiter {
+	return &ipRateLimiter{limiters: make(map[string]*rate.Limiter)}
+}
+
+func (rl *ipRateLimiter) allow(ip string) bool {
+	rl.mu.Lock()
+	limiter, ok := rl.limiters[ip]
+	if !ok {
+		limiter = rate.NewLimiter(rateLimitRPS, rateLimitBurst)
+		rl.limiters[ip] = limiter
+	}
+	rl.mu.Unlock()
+	return limiter.Allow()
+}
+
+func (rl *ipRateLimiter) middleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if !rl.allow(c.ClientIP()) {
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded, try again later"})
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
 
 func newRouter() *gin.Engine {
 	router := gin.New()
@@ -36,7 +82,8 @@ func newRouter() *gin.Engine {
 		})
 	})
 
-	router.POST("/predict", predictHandler)
+	predictLimiter := newIPRateLimiter()
+	router.POST("/predict", predictLimiter.middleware(), predictHandler)
 
 	return router
 }
