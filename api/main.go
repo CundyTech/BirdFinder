@@ -9,11 +9,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"golang.org/x/time/rate"
+
+	"birdfinder/api/middleware"
 )
 
 // maxUploadSize caps the /predict request body. Phone camera photos are
@@ -23,52 +23,28 @@ import (
 var maxUploadSize int64 = 10 << 20 // 10 MB
 
 // Per-IP rate limit for /predict, the endpoint that spawns a Python
-// subprocess per request. rateLimitBurst allows a short run of requests
+// subprocess per request. predictRateBurst allows a short run of requests
 // (e.g. someone taking a few photos in a row) before the sustained
-// rateLimitRPS refill rate kicks in. Declared as vars so tests can shrink
-// them instead of needing to wait on real time windows.
-var (
-	rateLimitRPS   rate.Limit = 1
-	rateLimitBurst int        = 5
+// predictRateRPS refill rate kicks in.
+const (
+	predictRateRPS   = 1
+	predictRateBurst = 5
 )
 
-// ipRateLimiter hands out one token-bucket limiter per client IP. A fresh
-// instance is created per newRouter() call (rather than a package-level
-// singleton) so each test gets isolated state.
-type ipRateLimiter struct {
-	mu       sync.Mutex
-	limiters map[string]*rate.Limiter
-}
-
-func newIPRateLimiter() *ipRateLimiter {
-	return &ipRateLimiter{limiters: make(map[string]*rate.Limiter)}
-}
-
-func (rl *ipRateLimiter) allow(ip string) bool {
-	rl.mu.Lock()
-	limiter, ok := rl.limiters[ip]
-	if !ok {
-		limiter = rate.NewLimiter(rateLimitRPS, rateLimitBurst)
-		rl.limiters[ip] = limiter
-	}
-	rl.mu.Unlock()
-	return limiter.Allow()
-}
-
-func (rl *ipRateLimiter) middleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if !rl.allow(c.ClientIP()) {
-			c.JSON(http.StatusTooManyRequests, gin.H{"error": "rate limit exceeded, try again later"})
-			c.Abort()
-			return
-		}
-		c.Next()
-	}
-}
+// maxConcurrentPredictions caps how many predict_cli.py subprocesses can run
+// at once. Per-IP rate limiting alone doesn't bound aggregate load across
+// many distinct clients; this protects the host itself from being
+// overwhelmed regardless of how many different IPs are involved.
+// predictionSlotWait is how long a request will queue for a free slot
+// before giving up.
+const (
+	maxConcurrentPredictions = 3
+	predictionSlotWait       = 10 * time.Second
+)
 
 func newRouter() *gin.Engine {
 	router := gin.New()
-	router.Use(gin.Logger(), gin.Recovery(), corsMiddleware())
+	router.Use(gin.Logger(), gin.Recovery(), middleware.CORS())
 
 	router.GET("/", func(c *gin.Context) {
 		c.String(200, "BirdFinder API: POST /predict (multipart form field 'image')")
@@ -82,8 +58,14 @@ func newRouter() *gin.Engine {
 		})
 	})
 
-	predictLimiter := newIPRateLimiter()
-	router.POST("/predict", predictLimiter.middleware(), predictHandler)
+	predictLimiter := middleware.NewIPRateLimiter(predictRateRPS, predictRateBurst)
+	predictSemaphore := middleware.NewSemaphore(maxConcurrentPredictions, predictionSlotWait)
+	router.POST("/predict",
+		predictLimiter.Middleware(),
+		predictSemaphore.Middleware(),
+		middleware.MaxUploadSize(maxUploadSize),
+		predictHandler,
+	)
 
 	return router
 }
@@ -95,23 +77,8 @@ func main() {
 	log.Fatal(router.Run(addr))
 }
 
-func corsMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(200)
-			return
-		}
-		c.Next()
-	}
-}
-
 func predictHandler(c *gin.Context) {
 	log.Printf("Received predict request")
-
-	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadSize)
 
 	// Try to parse multipart form
 	form, err := c.MultipartForm()
