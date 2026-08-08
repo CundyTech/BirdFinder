@@ -1,9 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,7 +14,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
+// maxUploadSize caps the /predict request body. Phone camera photos are
+// typically a few MB; 10MB gives headroom without leaving the endpoint open
+// to unbounded uploads. Declared as a var (not const) so tests can shrink it
+// rather than uploading real multi-megabyte payloads.
+var maxUploadSize int64 = 10 << 20 // 10 MB
+
+func newRouter() *gin.Engine {
 	router := gin.New()
 	router.Use(gin.Logger(), gin.Recovery(), corsMiddleware())
 
@@ -30,6 +38,11 @@ func main() {
 
 	router.POST("/predict", predictHandler)
 
+	return router
+}
+
+func main() {
+	router := newRouter()
 	addr := "0.0.0.0:8080"
 	log.Printf("Starting API on %s (accessible from local network)\n", addr)
 	log.Fatal(router.Run(addr))
@@ -51,9 +64,17 @@ func corsMiddleware() gin.HandlerFunc {
 func predictHandler(c *gin.Context) {
 	log.Printf("Received predict request")
 
+	c.Request.Body = http.MaxBytesReader(c.Writer, c.Request.Body, maxUploadSize)
+
 	// Try to parse multipart form
 	form, err := c.MultipartForm()
 	if err != nil {
+		var maxBytesErr *http.MaxBytesError
+		if errors.As(err, &maxBytesErr) {
+			log.Printf("Upload exceeded max size: %v", err)
+			c.JSON(413, gin.H{"error": fmt.Sprintf("image exceeds maximum size of %d bytes", maxUploadSize)})
+			return
+		}
 		log.Printf("MultipartForm error: %v", err)
 		c.JSON(400, gin.H{"error": "invalid multipart form"})
 		return
