@@ -46,6 +46,13 @@ const (
 
 func newRouter() *gin.Engine {
 	router := gin.New()
+	// Without this, Gin trusts X-Forwarded-For/X-Real-IP from any client by
+	// default, so c.ClientIP() — and therefore per-IP rate limiting — could
+	// be bypassed just by sending a spoofed header. There's no reverse proxy
+	// in front of this API, so no proxy should ever be trusted here.
+	if err := router.SetTrustedProxies(nil); err != nil {
+		log.Fatalf("failed to configure trusted proxies: %v", err)
+	}
 	router.Use(gin.Logger(), gin.Recovery(), middleware.CORS())
 
 	router.GET("/", func(c *gin.Context) {
@@ -75,8 +82,23 @@ func newRouter() *gin.Engine {
 func main() {
 	router := newRouter()
 	addr := "0.0.0.0:8080"
+
+	// router.Run() uses http.Server's zero-value timeouts — i.e. none — which
+	// leaves the server open to a slow-drip (Slowloris-style) client that
+	// stays under the byte cap but trickles the request in forever, tying up
+	// a rate-limit/concurrency slot indefinitely. Configuring an explicit
+	// http.Server bounds every phase of the connection instead.
+	server := &http.Server{
+		Addr:              addr,
+		Handler:           router,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       30 * time.Second,
+		WriteTimeout:      60 * time.Second, // must exceed ReadTimeout + the 30s predictor timeout
+		IdleTimeout:       60 * time.Second,
+	}
+
 	log.Printf("Starting API on %s (accessible from local network)\n", addr)
-	log.Fatal(router.Run(addr))
+	log.Fatal(server.ListenAndServe())
 }
 
 // detectImageContentType sniffs r's content type from its first bytes
@@ -94,6 +116,71 @@ func detectImageContentType(r io.Reader) (io.Reader, string, error) {
 	sniff = sniff[:n]
 	contentType := http.DetectContentType(sniff)
 	return io.MultiReader(bytes.NewReader(sniff), r), contentType, nil
+}
+
+// extensionForContentType maps a sniffed content type to a fixed, known-safe
+// file extension. Deriving the temp file's extension this way — from bytes
+// we've actually verified — rather than from the client-supplied filename
+// keeps arbitrary client input out of the filesystem call entirely.
+func extensionForContentType(contentType string) string {
+	switch contentType {
+	case "image/jpeg":
+		return ".jpg"
+	case "image/png":
+		return ".png"
+	case "image/gif":
+		return ".gif"
+	case "image/webp":
+		return ".webp"
+	default:
+		return ".img"
+	}
+}
+
+// sanitizeForLog strips control characters (newlines in particular) from
+// untrusted input before it's written to logs, so a client-controlled
+// string like a filename can't forge fake-looking log lines or inject
+// terminal escape sequences into whatever's viewing them.
+func sanitizeForLog(s string) string {
+	return strings.Map(func(r rune) rune {
+		if r < 0x20 || r == 0x7f {
+			return -1
+		}
+		return r
+	}, s)
+}
+
+// limitedWriter caps how many bytes can be written before returning an
+// error, so an unexpectedly large or runaway subprocess output can't
+// exhaust memory. predict_cli.py's real output is a small JSON object;
+// maxPredictorOutputBytes gives generous headroom while still bounding it.
+const maxPredictorOutputBytes = 1 << 20 // 1 MB
+
+type limitedWriter struct {
+	buf   bytes.Buffer
+	limit int
+}
+
+func (w *limitedWriter) Write(p []byte) (int, error) {
+	if w.buf.Len()+len(p) > w.limit {
+		return 0, fmt.Errorf("output exceeded %d byte limit", w.limit)
+	}
+	return w.buf.Write(p)
+}
+
+// pythonInterpreter is the interpreter used to run predict_cli.py. The
+// default is this project's own dev/deployment machine path; override it
+// via the PYTHON_INTERPRETER env var on any other host.
+var pythonInterpreter = envOrDefault(
+	"PYTHON_INTERPRETER",
+	`C:\Users\DanCu\AppData\Local\Programs\Python\Python311-arm64\python.exe`,
+)
+
+func envOrDefault(key, fallback string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return fallback
 }
 
 func predictHandler(c *gin.Context) {
@@ -121,22 +208,7 @@ func predictHandler(c *gin.Context) {
 	}
 
 	file := files[0]
-	log.Printf("Received file: %s, size: %d", file.Filename, file.Size)
-
-	// Get file extension from original filename
-	ext := filepath.Ext(file.Filename)
-	if ext == "" {
-		ext = ".jpg" // default extension
-	}
-
-	tmp, err := os.CreateTemp("", "upload-*"+ext)
-	if err != nil {
-		c.JSON(500, gin.H{"error": "failed to create temp file"})
-		return
-	}
-	defer os.Remove(tmp.Name())
-
-	log.Printf("Created temp file: %s", tmp.Name())
+	log.Printf("Received file: %s, size: %d", sanitizeForLog(file.Filename), file.Size)
 
 	src, err := file.Open()
 	if err != nil {
@@ -156,6 +228,17 @@ func predictHandler(c *gin.Context) {
 		return
 	}
 
+	// Extension is derived from the verified content type, not the client-
+	// supplied filename, so untrusted input never reaches this filesystem call.
+	tmp, err := os.CreateTemp("", "upload-*"+extensionForContentType(contentType))
+	if err != nil {
+		c.JSON(500, gin.H{"error": "failed to create temp file"})
+		return
+	}
+	defer os.Remove(tmp.Name())
+
+	log.Printf("Created temp file: %s", tmp.Name())
+
 	if _, err := io.Copy(tmp, imgReader); err != nil {
 		c.JSON(500, gin.H{"error": "failed to save uploaded file"})
 		return
@@ -172,12 +255,13 @@ func predictHandler(c *gin.Context) {
 	// Assume API is run from the `api` directory. Use relative path to the Python wrapper.
 	scriptPath := filepath.Join("..", "model", "build", "predict_cli.py")
 
-	cmd := exec.Command("C:\\Users\\DanCu\\AppData\\Local\\Programs\\Python\\Python311-arm64\\python.exe", scriptPath, "--image", tmp.Name())
+	cmd := exec.Command(pythonInterpreter, scriptPath, "--image", tmp.Name())
+	stdout := &limitedWriter{limit: maxPredictorOutputBytes}
+	cmd.Stdout = stdout
 	done := make(chan struct{})
-	var out []byte
 	var cmdErr error
 	go func() {
-		out, cmdErr = cmd.Output() // Use Output() instead of CombinedOutput() to avoid stderr
+		cmdErr = cmd.Run()
 		close(done)
 	}()
 
@@ -197,6 +281,7 @@ func predictHandler(c *gin.Context) {
 		return
 	}
 
+	out := stdout.buf.Bytes()
 	c.Data(200, "application/json", out)
 	log.Printf("Prediction output: %s", string(out))
 	log.Printf("Prediction completed successfully")

@@ -88,7 +88,8 @@ prediction, well under the Go API's 30s timeout).
    (the `.h5` isn't needed here — it's only useful for further training)
 
  - **2. Install the inference-side dependencies**, using the *same* Python interpreter
-   `api/main.go` is hardcoded to invoke — check that file if this path ever changes:
+   `api/main.go` invokes by default. Override it via the `PYTHON_INTERPRETER` env var if
+   this deployment machine's interpreter lives somewhere else:
 
 ```powershell
 C:\Users\DanCu\AppData\Local\Programs\Python\Python311-arm64\python.exe -m pip install -r model\build\requirements-inference.txt
