@@ -7,6 +7,7 @@
     "updates": {
       "enabled": false
     },
+    "icon": "./assets/icon.png",
     "plugins": [
       "expo-asset",
       "expo-font",
@@ -16,10 +17,22 @@
           "cameraPermission": "Allow BirdFinder to access your camera to identify birds.",
           "microphonePermission": false
         }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "backgroundColor": "#0e1116"
+        }
       ]
     ],
     "android": {
-      "package": "com.cundytech.birdfinder"
+      "package": "com.cundytech.birdfinder",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon-foreground.png",
+        "backgroundColor": "#1f9d6b"
+      }
     },
     "ios": {
       "bundleIdentifier": "com.cundytech.birdfinder"
