@@ -14,3 +14,4 @@ client/android/local.properties
 .env.production.local
 /model/build/*.h5
 
+*.exe
