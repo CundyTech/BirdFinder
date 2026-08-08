@@ -1,6 +1,11 @@
 // Central config for API base URL. Update to your machine IP if needed.
 export const API_BASE = 'http://192.168.01.50:8080';
 
+// Must match the API_KEY env var the server was started with. This is
+// extractable by anyone who unpacks the app — it stops casual/opportunistic
+// traffic, not a determined attacker. See api/README.md.
+export const API_KEY = 'REPLACE_WITH_YOUR_API_KEY';
+
 // Below this confidence (%), the low-confidence warning banner shows,
 // suggesting a retake.
 export const LOW_CONFIDENCE_THRESHOLD = 90;

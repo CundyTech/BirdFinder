@@ -8,6 +8,8 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+
+	"birdfinder/api/middleware"
 )
 
 // TestTrustedProxies_IgnoresSpoofedForwardedForHeader proves the rate
@@ -15,12 +17,13 @@ import (
 // request — SetTrustedProxies(nil) must make Gin ignore that header
 // entirely and key off the real connection address instead.
 func TestTrustedProxies_IgnoresSpoofedForwardedForHeader(t *testing.T) {
-	router := newRouter()
+	router := newRouter(testAPIKey)
 
 	makeRequest := func(forwardedFor string) int {
 		body, contentType := multipartBody(t, false, 0) // missing image field: fails fast, no subprocess
 		req := httptest.NewRequest(http.MethodPost, "/predict", body)
 		req.Header.Set("Content-Type", contentType)
+		req.Header.Set(middleware.APIKeyHeader, testAPIKey)
 		if forwardedFor != "" {
 			req.Header.Set("X-Forwarded-For", forwardedFor)
 		}
@@ -79,7 +82,7 @@ func TestSanitizeForLog(t *testing.T) {
 // changing, or the sanitizer being reused for a less strictly-parsed field
 // later.
 func TestPredictHandler_RejectsControlCharactersInFilenameUpstream(t *testing.T) {
-	router := newRouter()
+	router := newRouter(testAPIKey)
 
 	body := &bytes.Buffer{}
 	w := multipart.NewWriter(body)
@@ -96,6 +99,7 @@ func TestPredictHandler_RejectsControlCharactersInFilenameUpstream(t *testing.T)
 
 	req := httptest.NewRequest(http.MethodPost, "/predict", body)
 	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set(middleware.APIKeyHeader, testAPIKey)
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 

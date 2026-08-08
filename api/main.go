@@ -44,7 +44,7 @@ const (
 	predictionSlotWait       = 10 * time.Second
 )
 
-func newRouter() *gin.Engine {
+func newRouter(apiKey string) *gin.Engine {
 	router := gin.New()
 	// Without this, Gin trusts X-Forwarded-For/X-Real-IP from any client by
 	// default, so c.ClientIP() — and therefore per-IP rate limiting — could
@@ -59,6 +59,8 @@ func newRouter() *gin.Engine {
 		c.String(200, "BirdFinder API: POST /predict (multipart form field 'image')")
 	})
 
+	// Deliberately not behind the API key — monitoring/uptime checks need to
+	// reach this without a credential.
 	router.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status":  "healthy",
@@ -70,6 +72,9 @@ func newRouter() *gin.Engine {
 	predictLimiter := middleware.NewIPRateLimiter(predictRateRPS, predictRateBurst)
 	predictSemaphore := middleware.NewSemaphore(maxConcurrentPredictions, predictionSlotWait)
 	router.POST("/predict",
+		// Checked first: reject unauthenticated traffic before it costs a
+		// rate-limit bucket, a concurrency slot, or a body read.
+		middleware.APIKey(apiKey),
 		predictLimiter.Middleware(),
 		predictSemaphore.Middleware(),
 		middleware.MaxUploadSize(maxUploadSize),
@@ -80,7 +85,12 @@ func newRouter() *gin.Engine {
 }
 
 func main() {
-	router := newRouter()
+	apiKey := os.Getenv("API_KEY")
+	if apiKey == "" {
+		log.Fatal("API_KEY environment variable must be set")
+	}
+
+	router := newRouter(apiKey)
 	addr := "0.0.0.0:8080"
 
 	// router.Run() uses http.Server's zero-value timeouts — i.e. none — which

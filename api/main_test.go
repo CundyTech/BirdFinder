@@ -11,11 +11,17 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+
+	"birdfinder/api/middleware"
 )
 
 func init() {
 	gin.SetMode(gin.TestMode)
 }
+
+// testAPIKey is the key used across tests that need to get past the
+// /predict route's APIKey middleware to exercise the logic behind it.
+const testAPIKey = "test-api-key"
 
 // multipartBody builds a multipart/form-data body with an optional file
 // field named "image" containing size bytes of content that starts with a
@@ -51,7 +57,7 @@ func jpegLikeContent(size int) []byte {
 }
 
 func TestRootEndpoint(t *testing.T) {
-	router := newRouter()
+	router := newRouter(testAPIKey)
 	req := httptest.NewRequest(http.MethodGet, "/", nil)
 	rec := httptest.NewRecorder()
 
@@ -66,7 +72,9 @@ func TestRootEndpoint(t *testing.T) {
 }
 
 func TestHealthEndpoint(t *testing.T) {
-	router := newRouter()
+	// Deliberately sends no API key — /health must stay reachable without
+	// one for monitoring/uptime checks.
+	router := newRouter(testAPIKey)
 	req := httptest.NewRequest(http.MethodGet, "/health", nil)
 	rec := httptest.NewRecorder()
 
@@ -85,11 +93,42 @@ func TestHealthEndpoint(t *testing.T) {
 	}
 }
 
+func TestPredictHandler_RequiresAPIKey(t *testing.T) {
+	router := newRouter(testAPIKey)
+	body, contentType := multipartBody(t, true, 1024)
+	req := httptest.NewRequest(http.MethodPost, "/predict", body)
+	req.Header.Set("Content-Type", contentType)
+	// Deliberately no X-API-Key header.
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 without an API key, got %d: %s", rec.Code, rec.Body.String())
+	}
+}
+
+func TestPredictHandler_RejectsWrongAPIKey(t *testing.T) {
+	router := newRouter(testAPIKey)
+	body, contentType := multipartBody(t, true, 1024)
+	req := httptest.NewRequest(http.MethodPost, "/predict", body)
+	req.Header.Set("Content-Type", contentType)
+	req.Header.Set(middleware.APIKeyHeader, "wrong-key")
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("expected 401 with the wrong API key, got %d: %s", rec.Code, rec.Body.String())
+	}
+}
+
 func TestPredictHandler_MissingImageField(t *testing.T) {
-	router := newRouter()
+	router := newRouter(testAPIKey)
 	body, contentType := multipartBody(t, false, 0)
 	req := httptest.NewRequest(http.MethodPost, "/predict", body)
 	req.Header.Set("Content-Type", contentType)
+	req.Header.Set(middleware.APIKeyHeader, testAPIKey)
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)
@@ -108,9 +147,10 @@ func TestPredictHandler_MissingImageField(t *testing.T) {
 }
 
 func TestPredictHandler_InvalidMultipartForm(t *testing.T) {
-	router := newRouter()
+	router := newRouter(testAPIKey)
 	req := httptest.NewRequest(http.MethodPost, "/predict", bytes.NewBufferString("not a multipart body"))
 	req.Header.Set("Content-Type", "text/plain")
+	req.Header.Set(middleware.APIKeyHeader, testAPIKey)
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)
@@ -137,11 +177,12 @@ func TestPredictHandler_UploadTooLarge(t *testing.T) {
 	maxUploadSize = 16
 	defer func() { maxUploadSize = original }()
 
-	router := newRouter()
+	router := newRouter(testAPIKey)
 
 	body, contentType := multipartBody(t, true, 1024)
 	req := httptest.NewRequest(http.MethodPost, "/predict", body)
 	req.Header.Set("Content-Type", contentType)
+	req.Header.Set(middleware.APIKeyHeader, testAPIKey)
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)
@@ -164,10 +205,11 @@ func TestPredictHandler_UnderSizeLimitReachesPredictor(t *testing.T) {
 	// reach the predictor step. We can't run the real Python predictor in a
 	// unit test, so this just confirms we don't get rejected at 400/413 —
 	// i.e. validation correctly let a legitimate-shaped request through.
-	router := newRouter()
+	router := newRouter(testAPIKey)
 	body, contentType := multipartBody(t, true, 1024)
 	req := httptest.NewRequest(http.MethodPost, "/predict", body)
 	req.Header.Set("Content-Type", contentType)
+	req.Header.Set(middleware.APIKeyHeader, testAPIKey)
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)
@@ -178,7 +220,7 @@ func TestPredictHandler_UnderSizeLimitReachesPredictor(t *testing.T) {
 }
 
 func TestPredictHandler_RejectsNonImageUpload(t *testing.T) {
-	router := newRouter()
+	router := newRouter(testAPIKey)
 
 	body := &bytes.Buffer{}
 	w := multipart.NewWriter(body)
@@ -195,6 +237,7 @@ func TestPredictHandler_RejectsNonImageUpload(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/predict", body)
 	req.Header.Set("Content-Type", w.FormDataContentType())
+	req.Header.Set(middleware.APIKeyHeader, testAPIKey)
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)
