@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -77,6 +79,23 @@ func main() {
 	log.Fatal(router.Run(addr))
 }
 
+// detectImageContentType sniffs r's content type from its first bytes
+// (http.DetectContentType only needs up to 512), without losing those bytes
+// for the caller — it returns a reader that replays them followed by the
+// rest of r. This rejects obviously-non-image uploads (garbage, scripts,
+// arbitrary files) before spending a subprocess spawn on them; it doesn't
+// guarantee the file is a *valid* image — that's still predict_cli.py's job.
+func detectImageContentType(r io.Reader) (io.Reader, string, error) {
+	sniff := make([]byte, 512)
+	n, err := io.ReadFull(r, sniff)
+	if err != nil && !errors.Is(err, io.ErrUnexpectedEOF) && !errors.Is(err, io.EOF) {
+		return nil, "", err
+	}
+	sniff = sniff[:n]
+	contentType := http.DetectContentType(sniff)
+	return io.MultiReader(bytes.NewReader(sniff), r), contentType, nil
+}
+
 func predictHandler(c *gin.Context) {
 	log.Printf("Received predict request")
 
@@ -126,7 +145,18 @@ func predictHandler(c *gin.Context) {
 	}
 	defer src.Close()
 
-	if _, err := io.Copy(tmp, src); err != nil {
+	imgReader, contentType, err := detectImageContentType(src)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "failed to read uploaded file"})
+		return
+	}
+	if !strings.HasPrefix(contentType, "image/") {
+		log.Printf("Rejected upload: detected content type %q, not an image", contentType)
+		c.JSON(400, gin.H{"error": fmt.Sprintf("uploaded file is not a recognized image type (detected %s)", contentType)})
+		return
+	}
+
+	if _, err := io.Copy(tmp, imgReader); err != nil {
 		c.JSON(500, gin.H{"error": "failed to save uploaded file"})
 		return
 	}
