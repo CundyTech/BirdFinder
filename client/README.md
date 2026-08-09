@@ -11,7 +11,15 @@ cd client
 npm install
 ```
 
-2. Start the app:
+2. Set the API key the server expects:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and set `EXPO_PUBLIC_API_KEY` to match the `API_KEY` the API server was started with (see `api/README.md`). `.env` is gitignored — `.env.example` is the committed template.
+
+3. Start the app:
 
 ```bash
 npm start
@@ -23,7 +31,7 @@ or
 npx expo start --host lan
 ```
 
-3. Configure `API_URL` in `App.js` if you need to use your machine IP (e.g., `http://192.168.x.y:8080/predict`).
+4. Configure `API_BASE` in `src/config.js` if you need to use your machine IP (e.g., `http://192.168.x.y:8080`).
 
 Notes:
 - The app uses `expo-image-picker` to capture photos and uploads to the `/predict` endpoint.

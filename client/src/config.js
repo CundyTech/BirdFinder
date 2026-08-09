@@ -1,10 +1,15 @@
 // Central config for API base URL. Update to your machine IP if needed.
 export const API_BASE = 'http://192.168.01.50:8080';
 
-// Must match the API_KEY env var the server was started with. This is
-// extractable by anyone who unpacks the app — it stops casual/opportunistic
-// traffic, not a determined attacker. See api/README.md.
-export const API_KEY = 'REPLACE_WITH_YOUR_API_KEY';
+// Must match the API_KEY env var the server was started with. Set via
+// client/.env (gitignored — copy client/.env.example to get started), not
+// hardcoded here, so the real value never lands in git history. Still
+// extractable by anyone who unpacks the built app — this only stops
+// casual/opportunistic traffic, not a determined attacker. See api/README.md.
+export const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
+if (!API_KEY) {
+  console.warn('EXPO_PUBLIC_API_KEY is not set — API requests will be rejected. Copy client/.env.example to client/.env and fill it in.');
+}
 
 // Below this confidence (%), the low-confidence warning banner shows,
 // suggesting a retake.
