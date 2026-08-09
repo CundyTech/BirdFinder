@@ -1,7 +1,9 @@
-# For the ARM64 Windows inference host (what predict_cli.py actually runs
-# on, invoked by the Go API). TensorFlow has no installable wheel here —
-# onnxruntime does (verified: onnxruntime-1.28.0-cp311-cp311-win_arm64.whl).
-# Not used for training — see requirements.txt for that (the Windows VM).
-onnxruntime
-Pillow
-numpy
+# For inference hosts running predict_cli.py — the ARM64 Windows dev/deploy
+# machine, and the Linux container image built from api/Dockerfile.
+# TensorFlow has no installable wheel on ARM64 Windows — onnxruntime does
+# (verified: onnxruntime-1.28.0-cp311-cp311-win_arm64.whl). Not used for
+# training — see requirements.txt for that (the Windows VM).
+# Pinned for reproducible container builds — bump deliberately, not silently.
+onnxruntime==1.28.0
+Pillow==12.1.1
+numpy==2.4.3
