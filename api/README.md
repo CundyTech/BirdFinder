@@ -37,4 +37,6 @@ docker build -f api/Dockerfile -t birdfinder-api:local-test .
 docker run --rm -p 8080:8080 -e API_KEY=test123 birdfinder-api:local-test
 ```
 
-`.github/workflows/docker-publish.yml` runs `go vet`/`go test` and, only if they pass, builds and pushes the image to Docker Hub (`docker.io/dancundy/birdfinder-api`) whenever a `v*.*.*` tag is pushed to the repo. Requires the `DOCKERHUB_USERNAME`/`DOCKERHUB_TOKEN` repo secrets to be set (GitHub repo → Settings → Secrets and variables → Actions) — a Docker Hub access token, not the account password.
+`.github/workflows/docker-publish.yml` runs `go vet`/`go test` and, only if they pass, builds and pushes the image to GHCR (`ghcr.io/cundytech/birdfinder-api`) whenever a `v*.*.*` tag is pushed to the repo. Authenticates with the automatic `GITHUB_TOKEN` GitHub Actions already provides — no manual secrets to create, unlike Docker Hub. The workflow does need `permissions: packages: write` (already set on the job), since many repos default the token to read-only.
+
+**GHCR packages are private by default on first push.** After the first successful tag push, go to the package's page (GitHub profile/org → Packages → `birdfinder-api`) and either flip visibility to Public, or link the package to this repo and grant it access — otherwise pulling the image later (e.g. from k8s) will fail with an auth error even though the push succeeded.
