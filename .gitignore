@@ -1,5 +1,11 @@
 model/images/*
 model/h5/*
+# The two files api/Dockerfile actually needs at build time (and what
+# model/readme.md's manual deployment steps copy) — everything else in
+# model/h5/ (the .h5 training checkpoints, smoke/quick variants) stays
+# ignored; these are the small, deployable exception.
+!model/h5/bird_classifier_model.onnx
+!model/h5/labels.json
 model/build/bird_classifier_model_smoke.h5
 __pycache__/
 client/node_modules/*
