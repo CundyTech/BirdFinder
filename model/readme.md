@@ -92,7 +92,7 @@ prediction, well under the Go API's 30s timeout).
    this deployment machine's interpreter lives somewhere else:
 
 ```powershell
-C:\Users\DanCu\AppData\Local\Programs\Python\Python311-arm64\python.exe -m pip install -r model\build\requirements-inference.txt
+C:\Users\<you>\AppData\Local\Programs\Python\Python311-arm64\python.exe -m pip install -r model\build\requirements-inference.txt
 ```
 
    (`onnxruntime` ships a native `win_arm64` wheel — confirmed working, no CUDA/TensorFlow needed.)
@@ -100,12 +100,17 @@ C:\Users\DanCu\AppData\Local\Programs\Python\Python311-arm64\python.exe -m pip i
  - **3. Test it directly**, exactly as the Go API calls it:
 
 ```powershell
-C:\Users\DanCu\AppData\Local\Programs\Python\Python311-arm64\python.exe model\build\predict_cli.py --image path\to\some\photo.jpg
+C:\Users\<you>\AppData\Local\Programs\Python\Python311-arm64\python.exe model\build\predict_cli.py --image path\to\some\photo.jpg
 ```
 
    Prints a JSON object with `predicted_class`, `scores`, and `top_predictions`. If
    `bird_classifier_model.onnx` or `labels.json` aren't found in `model/h5/`, it prints a clear JSON
    error explaining what's missing instead of crashing.
+
+   Alternatively, `api/Dockerfile` bundles the interpreter, these dependencies, and the two
+   model artifacts above into a single container image — see [api/README.md](../api/README.md)
+   for the containerized path, which avoids needing a matching interpreter on the deployment
+   host at all.
 
 **Model storage & data layout**
 
@@ -129,5 +134,3 @@ C:\Users\DanCu\AppData\Local\Programs\Python\Python311-arm64\python.exe model\bu
    all three, or predictions will be quietly wrong even with a perfectly good model.
  - **If `conda` is not on PATH:** restart your shell after installing Miniforge/Anaconda, or run the full path to `conda.exe` (e.g. `C:\Users\<you>\miniforge3\Scripts\conda.exe`).
  - **Reproducibility:** Use [environment.lock.yml](environment.lock.yml) to recreate the exact environment used during development.
-
-If you want, I can also add a short `Makefile` or PowerShell script to automate create/train/predict steps.
