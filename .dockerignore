@@ -1,0 +1,8 @@
+client/
+model/images/
+model/h5/*.h5
+model/environment.yml
+model/environment.lock.yml
+.git/
+.github/
+.expo/
