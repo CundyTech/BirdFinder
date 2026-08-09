@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 #
 # Build from the repo root so this can reach both api/ and model/:
-#   docker build -f api/Dockerfile -t docker.io/dancundy/birdfinder-api:TAG .
+#   docker build -f api/Dockerfile -t ghcr.io/cundytech/birdfinder-api:TAG .
 #
 # predictHandler (api/main.go) shells out to model/build/predict_cli.py for
 # ONNX inference, so this image needs a Python + onnxruntime environment
@@ -12,7 +12,7 @@
 # both existing relative lookups resolve correctly with zero code changes.
 
 # ---- Stage 1: compile the Go API as a static binary ----
-FROM golang:1.25.0-alpine3.20 AS builder
+FROM golang:1.25.0-alpine AS builder
 WORKDIR /src
 COPY api/go.mod api/go.sum ./
 RUN go mod download
