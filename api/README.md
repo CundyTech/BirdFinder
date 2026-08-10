@@ -37,6 +37,44 @@ docker build -f api/Dockerfile -t birdfinder-api:local-test .
 docker run --rm -p 8080:8080 -e API_KEY=test123 birdfinder-api:local-test
 ```
 
-`.github/workflows/docker-publish.yml` runs `go vet`/`go test` and, only if they pass, builds and pushes the image to GHCR (`ghcr.io/cundytech/birdfinder-api`) whenever a `v*.*.*` tag is pushed to the repo. Authenticates with the automatic `GITHUB_TOKEN` GitHub Actions already provides — no manual secrets to create, unlike Docker Hub. The workflow does need `permissions: packages: write` (already set on the job), since many repos default the token to read-only.
+`.github/workflows/docker-publish.yml` runs `go vet`/`go test` and, only if they pass, builds the image once and pushes it to **both** GHCR and Amazon ECR whenever a `v*.*.*` tag is pushed to the repo:
+- `ghcr.io/cundytech/birdfinder-api`
+- `422623348863.dkr.ecr.eu-west-2.amazonaws.com/cundytech/bird-spotter-api`
+
+GHCR authenticates with the automatic `GITHUB_TOKEN` GitHub Actions already provides — no manual secret. The workflow does need `permissions: packages: write` (already set on the job), since many repos default the token to read-only.
 
 **GHCR packages are private by default on first push.** After the first successful tag push, go to the package's page (GitHub profile/org → Packages → `birdfinder-api`) and either flip visibility to Public, or link the package to this repo and grant it access — otherwise pulling the image later (e.g. from k8s) will fail with an auth error even though the push succeeded.
+
+**ECR requires two repo secrets** (GitHub repo → Settings → Secrets and variables → Actions) — these have to be set up in AWS IAM first, which needs to happen outside this repo:
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
+
+Create an IAM user (or reuse one) with a policy scoped to just this ECR repository, then generate an access key for it:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "ecr:GetAuthorizationToken",
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:InitiateLayerUpload",
+        "ecr:UploadLayerPart",
+        "ecr:CompleteLayerUpload",
+        "ecr:PutImage"
+      ],
+      "Resource": "arn:aws:ecr:eu-west-2:422623348863:repository/cundytech/bird-spotter-api"
+    }
+  ]
+}
+```
+
+(`ecr:GetAuthorizationToken` is an account-level action and doesn't support resource scoping — `Resource: "*"` is required there specifically, not a broad grant to everything else.)
+
+This uses long-lived access-key credentials, not [OIDC role assumption](https://docs.github.com/en/actions/deployment/security-hardening-your-deployments/configuring-openid-connect-in-amazon-web-services) — simpler to set up, but consider migrating to OIDC later to avoid a standing credential sitting in GitHub secrets indefinitely.
