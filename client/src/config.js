@@ -1,5 +1,5 @@
-// Central config for API base URL. Update to your machine IP if needed.
-export const API_BASE = 'http://192.168.01.50:8080';
+// Central config for API base URL.
+export const API_BASE = 'https://birdfinder-api.cundytech.com';
 
 // Must match the API_KEY env var the server was started with. Set via
 // client/.env (gitignored — copy client/.env.example to get started), not

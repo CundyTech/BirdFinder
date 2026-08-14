@@ -77,7 +77,7 @@ BirdFinder/
 │   ├── h5/                     # Trained model files (.h5, .onnx, labels.json)
 │   ├── images/                 # Training dataset
 │   └── readme.md
-└── .github/workflows/           # CI: build/test the API, build & push its container image
+└── .github/workflows/           # CI: test the API, build & push its image to GHCR
 ```
 
 ## API Endpoints

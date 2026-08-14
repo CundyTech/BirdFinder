@@ -31,7 +31,7 @@ or
 npx expo start --host lan
 ```
 
-4. Configure `API_BASE` in `src/config.js` if you need to use your machine IP (e.g., `http://192.168.x.y:8080`).
+4. `API_BASE` in `src/config.js` points at the deployed API (`https://birdfinder-api.cundytech.com`). Change it if you need to hit a local server instead (e.g., `http://192.168.x.y:8080`).
 
 Notes:
 - The app uses `expo-image-picker` to capture photos and uploads to the `/predict` endpoint.
