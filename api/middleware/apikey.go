@@ -25,7 +25,11 @@ func APIKey(key string) gin.HandlerFunc {
 
 		// Log missing header with request context so we can diagnose 401s.
 		if got == "" {
+			// Dump incoming headers to help diagnose why the header is missing
 			log.Printf("API key missing - remote=%s method=%s path=%s", c.ClientIP(), c.Request.Method, c.Request.URL.Path)
+			for name, vals := range c.Request.Header {
+				log.Printf("Header: %s=%v", name, vals)
+			}
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing or invalid API key"})
 			c.Abort()
 			return
@@ -36,7 +40,10 @@ func APIKey(key string) gin.HandlerFunc {
 
 		// Constant-time compare to avoid timing attacks.
 		if subtle.ConstantTimeCompare([]byte(got), []byte(key)) != 1 {
+			// Log the received value length and a fingerprint to help debug truncation or mangling.
 			log.Printf("API key invalid - remote=%s method=%s path=%s got_sha256=%x", c.ClientIP(), c.Request.Method, c.Request.URL.Path, gotHash)
+			log.Printf("Received API header (raw) length=%d", len(got))
+			log.Printf("Received API header (raw) value=%q", got)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "missing or invalid API key"})
 			c.Abort()
 			return
