@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import styles from '../styles';
-import { MIN_LOADING_DURATION_MS, UNCERTAIN_THRESHOLD } from '../config';
+import { MIN_LOADING_DURATION_MS } from '../config';
 import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
 import { recordSighting } from '../store/lifeListSlice';
 import useTrophies from '../hooks/useTrophies';
@@ -92,13 +92,6 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
 
             const json = await uploadPhoto(formData).unwrap();
             setResult(json);
-
-            // Below UNCERTAIN_THRESHOLD, ResultCard doesn't present a species
-            // guess at all — don't log an unidentified photo to the life list.
-            const maxScore = Array.isArray(json.scores) && json.scores.length ? Math.max(...json.scores) : 0;
-            if (maxScore * 100 >= UNCERTAIN_THRESHOLD && json.predicted_class) {
-                dispatch(recordSighting({ speciesId: json.predicted_class, confidence: maxScore, sourceUri: uri }));
-            }
         } catch (err) {
             setError(describeQueryError(err, 'Server error'));
         } finally {
@@ -114,6 +107,10 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
         setImageUri(null);
         setResult(null);
         setError(null);
+    };
+
+    const handleSaveSighting = (speciesId, confidence) => {
+        dispatch(recordSighting({ speciesId, confidence, sourceUri: imageUri }));
     };
 
     return (
@@ -133,7 +130,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                 style={styles.mainContent}
             >
                 {/* Main result card */}
-                {result && !loading && <ResultCard uri={imageUri} result={result} />}
+                {result && !loading && <ResultCard uri={imageUri} result={result} onSave={handleSaveSighting} />}
 
                 {/* Photo or placeholder */}
                 {!result && !loading && imageUri && <ImageCard uri={imageUri} />}

@@ -6,8 +6,12 @@ import SpeciesReferenceCard from './SpeciesReferenceCard';
 import ImageLightbox from './ImageLightbox';
 import { LOW_CONFIDENCE_THRESHOLD, UNCERTAIN_THRESHOLD, DEBUG_ALWAYS_SHOW_SPECIES_DETAILS } from '../config';
 
-export default function ResultCard({ uri, result }) {
+export default function ResultCard({ uri, result, onSave }) {
   const [viewerOpen, setViewerOpen] = useState(false);
+  // null until the user taps a different candidate — falls back to the
+  // top prediction so "Save" has a sensible default without assuming it.
+  const [selectedClass, setSelectedClass] = useState(null);
+  const [saved, setSaved] = useState(false);
 
   if (!result) return null;
 
@@ -60,20 +64,34 @@ export default function ResultCard({ uri, result }) {
     );
   }
 
-  const headerCandidate = { class: result.predicted_class, score: getMaxScore() };
-  const displayScorePercent = Number((headerCandidate.score * 100).toFixed(1));
-  const headerName = formatBirdName(headerCandidate.class);
-  const isLowConfidence = displayScorePercent < LOW_CONFIDENCE_THRESHOLD;
-  const confidenceLabel = isLowConfidence ? 'Possible match' : 'Strong match';
-
   const topPredictions = Array.isArray(result.top_predictions) && result.top_predictions.length > 0
     ? result.top_predictions
     : [{ class: result.predicted_class, score: getMaxScore() }];
 
+  // Everything below — title, confidence badge, reference card — reflects
+  // whichever candidate is selected, not just the model's top-1 guess, so
+  // switching candidates updates the whole page, not just the save button.
+  const effectiveSelectedClass = selectedClass || result.predicted_class;
+  const selectedCandidate =
+    topPredictions.find((p) => p.class === effectiveSelectedClass) || {
+      class: result.predicted_class,
+      score: getMaxScore(),
+    };
+  const selectedName = formatBirdName(effectiveSelectedClass);
+  const displayScorePercent = Number(((selectedCandidate.score || 0) * 100).toFixed(1));
+  const isLowConfidence = displayScorePercent < LOW_CONFIDENCE_THRESHOLD;
+  const confidenceLabel = isLowConfidence ? 'Possible match' : 'Strong match';
+
+  const handleSave = () => {
+    if (saved) return;
+    onSave?.(effectiveSelectedClass, selectedCandidate.score || 0);
+    setSaved(true);
+  };
+
   return (
     <View style={styles.resultCard}>
       <View style={styles.resultHeaderRow}>
-        <Text style={styles.birdName}>{headerName}</Text>
+        <Text style={styles.birdName}>{selectedName}</Text>
         <View style={[styles.confidenceBadge, isLowConfidence && styles.confidenceBadgeLow]}>
           <Text style={[styles.confidenceText, isLowConfidence && styles.confidenceTextLow]}>{confidenceLabel}</Text>
         </View>
@@ -87,28 +105,66 @@ export default function ResultCard({ uri, result }) {
         </View>
       )}
 
-      <SpeciesReferenceCard commonName={headerName} yourPhotoUri={uri} />
+      <SpeciesReferenceCard commonName={selectedName} yourPhotoUri={uri} />
 
       <View style={styles.predictionsCard}>
         <Text style={styles.predictionsTitle}>Similar species</Text>
+        {topPredictions.length > 1 && (
+          <Text style={styles.predictionsHint}>
+            Not quite right? Tap the correct match before saving.
+          </Text>
+        )}
         {topPredictions.slice(0, 3).map((p, i, arr) => {
           const isLast = i === arr.length - 1;
           const scorePercent = Math.min((p.score || 0) * 100, 100);
+          const isSelected = p.class === effectiveSelectedClass;
           return (
-            <View key={p.class || i} style={[styles.predictionRow, isLast && styles.predictionRowLast]}>
+            <TouchableOpacity
+              key={p.class || i}
+              style={[
+                styles.predictionRow,
+                isLast && styles.predictionRowLast,
+                isSelected && styles.predictionRowSelected,
+              ]}
+              onPress={() => setSelectedClass(p.class)}
+              disabled={saved}
+              accessibilityRole="button"
+              accessibilityLabel={`Choose ${formatBirdName(p.class)} as the species to save`}
+            >
               <View style={styles.predictionRowTop}>
-                <View style={styles.predictionRank}>
-                  <Text style={styles.predictionRankText}>{i + 1}</Text>
+                <View style={[styles.predictionRank, isSelected && styles.predictionRankSelected]}>
+                  {isSelected ? (
+                    <Feather name="check" size={14} color="#ffffff" />
+                  ) : (
+                    <Text style={styles.predictionRankText}>{i + 1}</Text>
+                  )}
                 </View>
                 <Text style={styles.predictionLabel}>{formatBirdName(p.class)}</Text>
               </View>
               <View style={styles.predictionBarTrack}>
                 <View style={[styles.predictionBarFill, { width: `${scorePercent}%` }]} />
               </View>
-            </View>
+            </TouchableOpacity>
           );
         })}
       </View>
+
+      <TouchableOpacity
+        style={[styles.saveButton, saved && styles.saveButtonSaved]}
+        onPress={handleSave}
+        disabled={saved}
+        accessibilityRole="button"
+        accessibilityLabel={saved ? 'Saved to sightings log' : `Save ${selectedName} to sightings log`}
+      >
+        <Feather
+          name={saved ? 'check-circle' : 'bookmark'}
+          size={18}
+          color={saved ? styles.PALETTE.primary : '#ffffff'}
+        />
+        <Text style={[styles.saveButtonText, saved && styles.saveButtonTextSaved]}>
+          {saved ? `Saved as ${selectedName}` : `Save as ${selectedName}`}
+        </Text>
+      </TouchableOpacity>
 
       {lightbox}
     </View>

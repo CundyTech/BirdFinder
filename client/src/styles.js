@@ -184,7 +184,12 @@ const styles = StyleSheet.create({
     color: PALETTE.textOnDark,
     fontSize: 15,
     fontWeight: '700',
-    marginBottom: 12,
+    marginBottom: 4,
+  },
+  predictionsHint: {
+    color: PALETTE.mutedText,
+    fontSize: 12,
+    marginBottom: 10,
   },
   predictionRow: {
     paddingVertical: 8,
@@ -193,6 +198,12 @@ const styles = StyleSheet.create({
   },
   predictionRowLast: {
     borderBottomWidth: 0,
+  },
+  predictionRowSelected: {
+    backgroundColor: 'rgba(31, 157, 107, 0.10)',
+    borderRadius: 10,
+    marginHorizontal: -8,
+    paddingHorizontal: 8,
   },
   predictionRowTop: {
     flexDirection: 'row',
@@ -207,6 +218,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+  },
+  predictionRankSelected: {
+    backgroundColor: PALETTE.primary,
   },
   predictionRankText: {
     color: PALETTE.textOnDark,
@@ -626,6 +640,29 @@ const styles = StyleSheet.create({
   resultActionTextSecondary: {
     color: PALETTE.textOnDark,
     fontWeight: '700',
+  },
+  saveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: PALETTE.primary,
+    borderRadius: 14,
+    paddingVertical: 15,
+    marginBottom: 16,
+  },
+  saveButtonSaved: {
+    backgroundColor: PALETTE.cardAlt,
+    borderWidth: 1,
+    borderColor: PALETTE.primary,
+  },
+  saveButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '700',
+    marginLeft: 8,
+  },
+  saveButtonTextSaved: {
+    color: PALETTE.primary,
   },
   actionPanel: {
     position: 'absolute',
