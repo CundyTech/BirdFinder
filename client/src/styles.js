@@ -691,6 +691,289 @@ const styles = StyleSheet.create({
     opacity: 0.95,
   },
 
+  // Active (built) home-screen tile — same shape as tileDisabled but at
+  // full opacity with a tinted icon circle, since it actually does something.
+  tile: {
+    backgroundColor: PALETTE.cardAlt,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: PALETTE.cardBorder,
+  },
+  tileIcon: {
+    width: 54,
+    height: 54,
+    borderRadius: 14,
+    backgroundColor: 'rgba(31, 157, 107, 0.16)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  tileText: { color: PALETTE.textOnDark, fontSize: 16, fontWeight: '700' },
+  tileCountBadge: {
+    backgroundColor: PALETTE.surface,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  tileCountBadgeText: {
+    color: PALETTE.primary,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  // Sub-screen header (life list, species gallery) — back chevron + title,
+  // distinct from the app's main brand Header.
+  subHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingTop: 18,
+    paddingBottom: 14,
+    paddingHorizontal: 20,
+  },
+  subHeaderBackButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: PALETTE.cardAlt,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  subHeaderTitleWrap: {
+    flex: 1,
+  },
+  subHeaderTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: PALETTE.textOnDark,
+  },
+  subHeaderSubtitle: {
+    fontSize: 12,
+    color: PALETTE.mutedText,
+    marginTop: 2,
+  },
+
+  // Life list progress bar
+  progressBarTrack: {
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: PALETTE.cardAlt,
+    overflow: 'hidden',
+    marginHorizontal: 20,
+    marginBottom: 18,
+  },
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+    backgroundColor: PALETTE.primary,
+  },
+
+  // Species roster grid (life list)
+  speciesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  speciesTile: {
+    width: '48%',
+    backgroundColor: PALETTE.cardAlt,
+    borderRadius: 14,
+    padding: 10,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: PALETTE.cardBorder,
+  },
+  speciesTileCaught: {
+    borderColor: PALETTE.primary,
+  },
+  speciesTileImageWrapper: {
+    width: '100%',
+    aspectRatio: 1.2,
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: PALETTE.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 8,
+  },
+  speciesTileImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  speciesTileName: {
+    color: PALETTE.textOnDark,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  speciesTileNameUncaught: {
+    color: PALETTE.mutedText,
+  },
+  speciesTileCountBadge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(14, 17, 22, 0.75)',
+    borderRadius: 10,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  speciesTileCountBadgeText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  tileRarityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  tileRarityPipsRow: {
+    flexDirection: 'row',
+    marginRight: 5,
+  },
+  tileRarityPip: {
+    width: 11,
+    height: 6,
+    borderRadius: 2,
+    backgroundColor: 'rgba(154, 166, 178, 0.25)',
+    marginRight: 3,
+  },
+  tileRarityPipFilled: {
+    backgroundColor: PALETTE.accent,
+  },
+  tileRarityLabel: {
+    flexShrink: 1,
+    color: PALETTE.mutedText,
+    fontSize: 10,
+  },
+
+  // "Top trumps"-style species facts card (life list species gallery)
+  factsCard: {
+    backgroundColor: PALETTE.cardAlt,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: PALETTE.cardBorder,
+  },
+  factsCardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  factsCardImage: {
+    width: 64,
+    height: 64,
+    borderRadius: 14,
+    marginRight: 14,
+    backgroundColor: PALETTE.surface,
+  },
+  factsCardImagePlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  factsCardHeaderText: {
+    flex: 1,
+  },
+  factsCardName: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: PALETTE.textOnDark,
+  },
+  factsCardSciName: {
+    fontSize: 13,
+    fontStyle: 'italic',
+    color: PALETTE.mutedText,
+    marginTop: 2,
+  },
+  rarityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: PALETTE.surface,
+    borderRadius: 10,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 4,
+  },
+  rarityLabel: {
+    color: PALETTE.mutedText,
+    fontSize: 13,
+    fontWeight: '700',
+    marginRight: 10,
+  },
+  rarityPipsRow: {
+    flexDirection: 'row',
+    marginRight: 10,
+  },
+  // Segment-bar style rather than tiny dots — a translucent tint (instead
+  // of a fixed dark hex) so the empty slots stay visible no matter what
+  // background they sit on, and read clearly as "slots" against filled ones.
+  rarityPip: {
+    width: 18,
+    height: 9,
+    borderRadius: 3,
+    backgroundColor: 'rgba(154, 166, 178, 0.25)',
+    marginRight: 5,
+  },
+  rarityPipFilled: {
+    backgroundColor: PALETTE.accent,
+  },
+  rarityTierText: {
+    flex: 1,
+    textAlign: 'right',
+    color: PALETTE.textOnDark,
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  // Per-species photo gallery
+  galleryGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  galleryGridTile: {
+    width: '31.5%',
+    aspectRatio: 1,
+    marginBottom: 10,
+  },
+  galleryGridTileTouchable: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: PALETTE.surface,
+  },
+  galleryGridImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  galleryDeleteButton: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(14, 17, 22, 0.75)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyStateText: {
+    color: PALETTE.mutedText,
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 40,
+    paddingHorizontal: 20,
+  },
+
   // Full-screen image viewer
   lightboxBackdrop: {
     flex: 1,

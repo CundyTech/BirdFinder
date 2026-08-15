@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StatusBar, View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useDispatch, useSelector } from 'react-redux';
 import styles from '../styles';
-import { MIN_LOADING_DURATION_MS } from '../config';
+import { MIN_LOADING_DURATION_MS, UNCERTAIN_THRESHOLD } from '../config';
 import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
+import { recordSighting } from '../store/lifeListSlice';
 
 import Header from '../components/Header';
 import PlaceholderCard from '../components/PlaceholderCard';
@@ -20,11 +22,14 @@ function describeQueryError(err, httpPrefix) {
     return err?.error || 'Something went wrong. Please try again.';
 }
 
-export default function HomeScreen() {
+export default function HomeScreen({ onOpenLifeList }) {
     const [imageUri, setImageUri] = useState(null);
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+
+    const dispatch = useDispatch();
+    const sightingsCount = useSelector((state) => state.lifeList.sightings.length);
 
     const { data: healthData, error: healthQueryError, isFetching: healthLoading, refetch: refetchHealth } = useCheckHealthQuery();
     const [uploadPhoto] = useUploadPhotoMutation();
@@ -83,6 +88,13 @@ export default function HomeScreen() {
 
             const json = await uploadPhoto(formData).unwrap();
             setResult(json);
+
+            // Below UNCERTAIN_THRESHOLD, ResultCard doesn't present a species
+            // guess at all — don't log an unidentified photo to the life list.
+            const maxScore = Array.isArray(json.scores) && json.scores.length ? Math.max(...json.scores) : 0;
+            if (maxScore * 100 >= UNCERTAIN_THRESHOLD && json.predicted_class) {
+                dispatch(recordSighting({ speciesId: json.predicted_class, confidence: maxScore, sourceUri: uri }));
+            }
         } catch (err) {
             setError(describeQueryError(err, 'Server error'));
         } finally {
@@ -147,16 +159,18 @@ export default function HomeScreen() {
                             <View style={styles.soonBadge}><Text style={styles.soonBadgeText}>Soon</Text></View>
                         </View>
 
-                        <View style={styles.tileDisabled}>
+                        <TouchableOpacity style={styles.tile} onPress={onOpenLifeList} activeOpacity={0.8}>
                             <View style={styles.tileLeft}>
-                                <View style={styles.tileIconDisabled}><Feather name="book-open" size={22} color={styles.PALETTE.mutedText} /></View>
+                                <View style={styles.tileIcon}><Feather name="book-open" size={22} color={styles.PALETTE.primary} /></View>
                                 <View>
-                                    <Text style={styles.tileTextDisabled}>My Sightings Log</Text>
+                                    <Text style={styles.tileText}>My Sightings Log</Text>
                                     <Text style={styles.tileSub}>Your recorded sightings</Text>
                                 </View>
                             </View>
-                            <View style={styles.soonBadge}><Text style={styles.soonBadgeText}>Soon</Text></View>
-                        </View>
+                            <View style={styles.tileCountBadge}>
+                                <Text style={styles.tileCountBadgeText}>{sightingsCount}</Text>
+                            </View>
+                        </TouchableOpacity>
                     </>
                 )}
 
