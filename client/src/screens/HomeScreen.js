@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, StatusBar, View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import styles from '../styles';
-import { API_BASE, MIN_LOADING_DURATION_MS } from '../config';
+import { MIN_LOADING_DURATION_MS } from '../config';
+import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
 
 import Header from '../components/Header';
 import PlaceholderCard from '../components/PlaceholderCard';
@@ -12,15 +13,27 @@ import LoadingCard from '../components/LoadingCard';
 import ResultCard from '../components/ResultCard';
 import BirdPatternBackground from '../components/BirdPatternBackground';
 
-const API_URL = `${API_BASE}/predict`;
+// fetchBaseQuery's error shape: { status: <http code> } for a bad response,
+// { status: 'FETCH_ERROR', error: <message> } for a network failure.
+function describeQueryError(err, httpPrefix) {
+    if (typeof err?.status === 'number') return `${httpPrefix} (${err.status})`;
+    return err?.error || 'Something went wrong. Please try again.';
+}
 
 export default function HomeScreen() {
     const [imageUri, setImageUri] = useState(null);
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const [apiHealth, setApiHealth] = useState(null);
-    const [healthLoading, setHealthLoading] = useState(false);
+
+    const { data: healthData, error: healthQueryError, isFetching: healthLoading, refetch: refetchHealth } = useCheckHealthQuery();
+    const [uploadPhoto] = useUploadPhotoMutation();
+
+    const apiHealth = healthQueryError
+        ? { status: 'unhealthy', error: describeQueryError(healthQueryError, 'HTTP') }
+        : healthData
+            ? { status: 'healthy', ...healthData }
+            : null;
 
     const pickImage = async () => {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -57,34 +70,21 @@ export default function HomeScreen() {
         setError(null);
         const startedAt = Date.now();
         try {
-            const localUri = uri;
-            const filename = localUri.split('/').pop();
+            const filename = uri.split('/').pop();
             const match = /(\.[0-9a-z]+)$/i.exec(filename);
             const type = match ? `image/${match[1].replace('.', '')}` : `image`;
 
             const formData = new FormData();
             formData.append('image', {
-                uri: localUri,
+                uri,
                 name: filename,
                 type,
             });
 
-            const res = await fetch(API_URL, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
-
-            if (!res.ok) {
-                throw new Error(`Server error (${res.status})`);
-            }
-
-            const json = await res.json();
+            const json = await uploadPhoto(formData).unwrap();
             setResult(json);
         } catch (err) {
-            setError(err.message || 'Something went wrong. Please try again.');
+            setError(describeQueryError(err, 'Server error'));
         } finally {
             const remaining = MIN_LOADING_DURATION_MS - (Date.now() - startedAt);
             if (remaining > 0) {
@@ -100,31 +100,6 @@ export default function HomeScreen() {
         setError(null);
     };
 
-    const checkApiHealth = async () => {
-        setHealthLoading(true);
-        try {
-            const healthUrl = API_URL.replace('/predict', '/health');
-            const res = await fetch(healthUrl, {
-                method: 'GET',
-            });
-
-            if (res.ok) {
-                const json = await res.json();
-                setApiHealth({ status: 'healthy', ...json });
-            } else {
-                setApiHealth({ status: 'unhealthy', error: `HTTP ${res.status}` });
-            }
-        } catch (err) {
-            setApiHealth({ status: 'unhealthy', error: err.message });
-        } finally {
-            setHealthLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        checkApiHealth();
-    }, []);
-
     return (
         <SafeAreaView style={styles.container}>
             <BirdPatternBackground />
@@ -134,7 +109,7 @@ export default function HomeScreen() {
                 showHideTransition={'slide'}
                 networkActivityIndicatorVisible={true} />
 
-            <Header apiHealth={apiHealth} healthLoading={healthLoading} onRetryHealth={checkApiHealth} />
+            <Header apiHealth={apiHealth} healthLoading={healthLoading} onRetryHealth={refetchHealth} />
 
             <ScrollView
                 contentContainerStyle={styles.scrollContainer}

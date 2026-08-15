@@ -9,6 +9,10 @@ export const API_BASE = 'https://birdfinder-api.cundytech.com';
 export const API_KEY = process.env.EXPO_PUBLIC_API_KEY;
 if (!API_KEY) {
   console.warn('EXPO_PUBLIC_API_KEY is not set — API requests will be rejected. Copy client/.env.example to client/.env and fill it in.');
+} else {
+  // Mask the key in logs: show first 6 and last 4 chars plus length
+  const masked = API_KEY.length > 10 ? `${API_KEY.slice(0, 6)}…${API_KEY.slice(-4)}` : API_KEY;
+  console.log(`Loaded EXPO_PUBLIC_API_KEY (masked=${masked} len=${API_KEY.length})`);
 }
 
 // Below this confidence (%), the low-confidence warning banner shows,
