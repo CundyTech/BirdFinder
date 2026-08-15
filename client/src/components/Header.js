@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import styles from '../styles';
 
 export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
@@ -11,10 +10,10 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
     <View style={styles.header}>
       <View style={styles.brandRow}>
         <View style={styles.logoMark}>
-          <MaterialCommunityIcons name="bird" size={22} color="#ffffff" />
+          <Image source={require('../../assets/icon.png')} style={styles.logoMarkImage} />
         </View>
         <View style={styles.brandTextWrap}>
-          <Text style={styles.brandTitle}>BirdFinder</Text>
+          <Text style={styles.brandTitle}>Bird Finder UK</Text>
           <Text style={styles.brandSubtitle}>UK bird identification</Text>
         </View>
         {!healthLoading && apiHealth && (

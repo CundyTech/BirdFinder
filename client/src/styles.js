@@ -49,6 +49,11 @@ const styles = StyleSheet.create({
     backgroundColor: PALETTE.primary,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  logoMarkImage: {
+    width: '100%',
+    height: '100%',
   },
   brandTextWrap: {
     flex: 1,
