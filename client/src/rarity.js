@@ -14,6 +14,8 @@ const TIER_DEFS = [
 
 export const RARITY_MAX_PIPS = 5;
 export const RARITY_TIER_COUNT = TIER_DEFS.length;
+// Rarest-first order, e.g. for iterating trophies or a tier legend.
+export const RARITY_TIERS = TIER_DEFS;
 
 // rarityMap: { [speciesId]: ukObservationCount }.
 // Returns { [speciesId]: { label, pips, rank } }, rank 0 = rarest overall.

@@ -170,42 +170,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  // Not-yet-built menu items — visually demoted, not dead buttons pretending to work
-  tileDisabled: {
-    backgroundColor: PALETTE.cardAlt,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    opacity: 0.55,
-  },
   tileLeft: { flexDirection: 'row', alignItems: 'center' },
-  tileIconDisabled: {
-    width: 54,
-    height: 54,
-    borderRadius: 14,
-    backgroundColor: 'rgba(154, 166, 178, 0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  tileTextDisabled: { color: PALETTE.mutedText, fontSize: 16, fontWeight: '700' },
   tileSub: { color: PALETTE.mutedText, fontSize: 13 },
-  soonBadge: {
-    backgroundColor: PALETTE.surface,
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  soonBadgeText: {
-    color: PALETTE.mutedText,
-    fontSize: 11,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
 
   // Nested inside resultCard — no border of its own, grouped by fill only
   predictionsCard: {
@@ -691,8 +657,7 @@ const styles = StyleSheet.create({
     opacity: 0.95,
   },
 
-  // Active (built) home-screen tile — same shape as tileDisabled but at
-  // full opacity with a tinted icon circle, since it actually does something.
+  // Home-screen menu tile (Trophy Cabinet, My Sightings Log)
   tile: {
     backgroundColor: PALETTE.cardAlt,
     borderRadius: 12,
@@ -851,6 +816,86 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     color: PALETTE.mutedText,
     fontSize: 10,
+  },
+
+  // Trophy cabinet
+  trophyCard: {
+    backgroundColor: PALETTE.cardAlt,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: PALETTE.cardBorder,
+  },
+  trophyCardUnlocked: {
+    borderColor: PALETTE.accent,
+  },
+  trophyCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  trophyIconCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: PALETTE.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  trophyIconCircleUnlocked: {
+    backgroundColor: 'rgba(245, 158, 11, 0.18)',
+  },
+  trophyHeaderText: {
+    flex: 1,
+  },
+  trophyLabel: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: PALETTE.textOnDark,
+  },
+  trophyProgressText: {
+    fontSize: 12,
+    color: PALETTE.mutedText,
+    marginTop: 2,
+  },
+  trophyProgressBarTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: PALETTE.surface,
+    overflow: 'hidden',
+    marginTop: 10,
+  },
+  trophyProgressBarFill: {
+    height: '100%',
+    borderRadius: 3,
+    backgroundColor: PALETTE.accent,
+  },
+  trophySpeciesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 14,
+    gap: 8,
+  },
+  trophySpeciesChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: PALETTE.surface,
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  trophySpeciesChipCaught: {
+    backgroundColor: 'rgba(31, 157, 107, 0.16)',
+  },
+  trophySpeciesChipText: {
+    fontSize: 12,
+    color: PALETTE.mutedText,
+    marginLeft: 5,
+  },
+  trophySpeciesChipTextCaught: {
+    color: PALETTE.textOnDark,
+    fontWeight: '600',
   },
 
   // "Top trumps"-style species facts card (life list species gallery)

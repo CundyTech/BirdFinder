@@ -7,6 +7,8 @@ import styles from '../styles';
 import { MIN_LOADING_DURATION_MS, UNCERTAIN_THRESHOLD } from '../config';
 import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
 import { recordSighting } from '../store/lifeListSlice';
+import useTrophies from '../hooks/useTrophies';
+import { RARITY_TIER_COUNT } from '../rarity';
 
 import Header from '../components/Header';
 import PlaceholderCard from '../components/PlaceholderCard';
@@ -22,7 +24,7 @@ function describeQueryError(err, httpPrefix) {
     return err?.error || 'Something went wrong. Please try again.';
 }
 
-export default function HomeScreen({ onOpenLifeList }) {
+export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
     const [imageUri, setImageUri] = useState(null);
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -30,6 +32,8 @@ export default function HomeScreen({ onOpenLifeList }) {
 
     const dispatch = useDispatch();
     const sightingsCount = useSelector((state) => state.lifeList.sightings.length);
+    const trophies = useTrophies();
+    const unlockedTrophyCount = trophies ? trophies.filter((t) => t.unlocked).length : 0;
 
     const { data: healthData, error: healthQueryError, isFetching: healthLoading, refetch: refetchHealth } = useCheckHealthQuery();
     const [uploadPhoto] = useUploadPhotoMutation();
@@ -146,18 +150,20 @@ export default function HomeScreen({ onOpenLifeList }) {
                             </View>
                         </TouchableOpacity>
 
-                        <Text style={styles.sectionLabel}>Coming soon</Text>
+                        <Text style={styles.sectionLabel}>Your collection</Text>
 
-                        <View style={styles.tileDisabled}>
+                        <TouchableOpacity style={styles.tile} onPress={onOpenTrophies} activeOpacity={0.8}>
                             <View style={styles.tileLeft}>
-                                <View style={styles.tileIconDisabled}><MaterialCommunityIcons name="bird" size={22} color={styles.PALETTE.mutedText} /></View>
+                                <View style={styles.tileIcon}><MaterialCommunityIcons name="trophy" size={22} color={styles.PALETTE.primary} /></View>
                                 <View>
-                                    <Text style={styles.tileTextDisabled}>Browse Species</Text>
-                                    <Text style={styles.tileSub}>Explore species reference</Text>
+                                    <Text style={styles.tileText}>Trophy Cabinet</Text>
+                                    <Text style={styles.tileSub}>Collect rarity trophies</Text>
                                 </View>
                             </View>
-                            <View style={styles.soonBadge}><Text style={styles.soonBadgeText}>Soon</Text></View>
-                        </View>
+                            <View style={styles.tileCountBadge}>
+                                <Text style={styles.tileCountBadgeText}>{unlockedTrophyCount}/{RARITY_TIER_COUNT}</Text>
+                            </View>
+                        </TouchableOpacity>
 
                         <TouchableOpacity style={styles.tile} onPress={onOpenLifeList} activeOpacity={0.8}>
                             <View style={styles.tileLeft}>
