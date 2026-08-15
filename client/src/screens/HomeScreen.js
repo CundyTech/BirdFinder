@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SafeAreaView, ScrollView, StatusBar, View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
+import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -116,11 +116,6 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
     return (
         <SafeAreaView style={styles.container}>
             <BirdPatternBackground />
-
-            <StatusBar barStyle="light-content"
-                backgroundColor={styles.header.backgroundColor}
-                showHideTransition={'slide'}
-                networkActivityIndicatorVisible={true} />
 
             <Header apiHealth={apiHealth} healthLoading={healthLoading} onRetryHealth={refetchHealth} />
 
