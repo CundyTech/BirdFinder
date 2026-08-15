@@ -21,3 +21,4 @@ client/android/local.properties
 /model/build/*.h5
 
 *.exe
+/.vscode/launch.json

@@ -19,7 +19,7 @@ func CORS(allowedOrigins ...string) gin.HandlerFunc {
 			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 			c.Writer.Header().Set("Vary", "Origin")
 			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-API-Key")
 		}
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(200)
