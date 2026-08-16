@@ -135,6 +135,214 @@ const TAXON_IDS = {
   Yellowhammer: 9195,
 };
 
+// "Bird family" trophy groupings — informal, common-name-based types a
+// birdwatcher would recognise (e.g. "the tits"), not strict taxonomic
+// families. That's deliberate: Long-tailed Tit is scientifically a
+// different family from the other tits (Aegithalidae vs Paridae), but
+// splitting it out would be a confusing trophy for anyone but a taxonomist.
+// Every one of the 60 species belongs to exactly one group.
+export const TYPE_GROUPS = [
+  { id: 'tits', label: 'Tits' },
+  { id: 'corvids', label: 'Crows & Corvids' },
+  { id: 'raptors', label: 'Birds of Prey' },
+  { id: 'owls', label: 'Owls' },
+  { id: 'waterfowl', label: 'Waterfowl' },
+  { id: 'gulls', label: 'Gulls' },
+  { id: 'thrushes', label: 'Thrushes' },
+  { id: 'finches', label: 'Finches' },
+  { id: 'woodpeckers', label: 'Woodpeckers' },
+  { id: 'wagtails', label: 'Wagtails' },
+  { id: 'doves', label: 'Doves & Pigeons' },
+  { id: 'warblers', label: 'Warblers' },
+  { id: 'waterside', label: 'Waterside Birds' },
+  { id: 'waders', label: 'Waders' },
+  { id: 'buntings', label: 'Buntings' },
+  { id: 'aerial', label: 'Swifts, Swallows & Martins' },
+  { id: 'climbers', label: 'Woodland Climbers' },
+  { id: 'gamebirds', label: 'Gamebirds' },
+  { id: 'songbirds', label: 'Garden & Countryside Songbirds' },
+];
+
+const TYPE_GROUP_BY_SPECIES = {
+  Coal_Tit: 'tits',
+  Eurasian_Blue_Tit: 'tits',
+  Great_Tit: 'tits',
+  Long_tailed_Tit: 'tits',
+
+  Carrion_Crow: 'corvids',
+  Eurasian_Jackdaw: 'corvids',
+  Eurasian_Jay: 'corvids',
+  Eurasian_Magpie: 'corvids',
+  Common_Raven: 'corvids',
+  Rook: 'corvids',
+
+  Common_Buzzard: 'raptors',
+  Common_Kestrel: 'raptors',
+  Eurasian_Sparrowhawk: 'raptors',
+  Red_Kite: 'raptors',
+
+  Barn_Owl: 'owls',
+  Tawny_Owl: 'owls',
+
+  Canada_Goose: 'waterfowl',
+  Mallard: 'waterfowl',
+  Mute_Swan: 'waterfowl',
+
+  Black_headed_Gull: 'gulls',
+  European_Herring_Gull: 'gulls',
+
+  Eurasian_Blackbird: 'thrushes',
+  Mistle_Thrush: 'thrushes',
+  Song_Thrush: 'thrushes',
+
+  Eurasian_Bullfinch: 'finches',
+  Eurasian_Chaffinch: 'finches',
+  Eurasian_Greenfinch: 'finches',
+  European_Goldfinch: 'finches',
+  Common_Linnet: 'finches',
+
+  Great_Spotted_Woodpecker: 'woodpeckers',
+  Green_Woodpecker: 'woodpeckers',
+
+  Grey_Wagtail: 'wagtails',
+  Pied_Wagtail: 'wagtails',
+
+  Eurasian_Collared_Dove: 'doves',
+  Stock_Dove: 'doves',
+  Woodpigeon: 'doves',
+
+  Common_Blackcap: 'warblers',
+  Common_Chiffchaff: 'warblers',
+  Willow_Warbler: 'warblers',
+
+  Common_Moorhen: 'waterside',
+  Eurasian_Coot: 'waterside',
+  Grey_Heron: 'waterside',
+  Common_Kingfisher: 'waterside',
+
+  Eurasian_Oystercatcher: 'waders',
+  Northern_Lapwing: 'waders',
+
+  Reed_Bunting: 'buntings',
+  Yellowhammer: 'buntings',
+
+  Barn_Swallow: 'aerial',
+  Common_Swift: 'aerial',
+  House_Martin: 'aerial',
+
+  Eurasian_Nuthatch: 'climbers',
+  Eurasian_Treecreeper: 'climbers',
+
+  Common_Pheasant: 'gamebirds',
+  Grey_Partridge: 'gamebirds',
+
+  Dunnock: 'songbirds',
+  Eurasian_Skylark: 'songbirds',
+  Eurasian_Wren: 'songbirds',
+  European_Robin: 'songbirds',
+  European_Starling: 'songbirds',
+  House_Sparrow: 'songbirds',
+};
+
+// Habitat trophy groupings — where you'd typically go looking for each
+// species, not what family it belongs to (a Robin and a Blackbird are
+// different families but the same "garden bird" trophy). Real birds cross
+// habitats constantly; this pins each species to whichever habitat it's
+// most classically associated with in UK birdwatching, same simplification
+// tradeoff as the family groupings above. Every species belongs to exactly
+// one habitat.
+export const HABITAT_GROUPS = [
+  { id: 'garden', label: 'Garden Birds' },
+  { id: 'woodland', label: 'Woodland Birds' },
+  { id: 'wetland', label: 'Wetland & Coastal Birds' },
+  { id: 'farmland', label: 'Farmland Birds' },
+];
+
+const HABITAT_BY_SPECIES = {
+  Carrion_Crow: 'garden',
+  Common_Swift: 'garden',
+  Dunnock: 'garden',
+  Eurasian_Blackbird: 'garden',
+  Eurasian_Blue_Tit: 'garden',
+  Eurasian_Chaffinch: 'garden',
+  Eurasian_Collared_Dove: 'garden',
+  Eurasian_Greenfinch: 'garden',
+  Eurasian_Jackdaw: 'garden',
+  Eurasian_Magpie: 'garden',
+  Eurasian_Wren: 'garden',
+  European_Goldfinch: 'garden',
+  European_Robin: 'garden',
+  European_Starling: 'garden',
+  Great_Tit: 'garden',
+  House_Martin: 'garden',
+  House_Sparrow: 'garden',
+  Pied_Wagtail: 'garden',
+  Song_Thrush: 'garden',
+  Woodpigeon: 'garden',
+
+  Coal_Tit: 'woodland',
+  Common_Blackcap: 'woodland',
+  Common_Chiffchaff: 'woodland',
+  Eurasian_Bullfinch: 'woodland',
+  Eurasian_Jay: 'woodland',
+  Eurasian_Nuthatch: 'woodland',
+  Eurasian_Sparrowhawk: 'woodland',
+  Eurasian_Treecreeper: 'woodland',
+  Great_Spotted_Woodpecker: 'woodland',
+  Green_Woodpecker: 'woodland',
+  Long_tailed_Tit: 'woodland',
+  Tawny_Owl: 'woodland',
+  Willow_Warbler: 'woodland',
+
+  Black_headed_Gull: 'wetland',
+  Canada_Goose: 'wetland',
+  Common_Kingfisher: 'wetland',
+  Common_Moorhen: 'wetland',
+  Eurasian_Coot: 'wetland',
+  Eurasian_Oystercatcher: 'wetland',
+  European_Herring_Gull: 'wetland',
+  Grey_Heron: 'wetland',
+  Grey_Wagtail: 'wetland',
+  Mallard: 'wetland',
+  Mute_Swan: 'wetland',
+  Reed_Bunting: 'wetland',
+
+  Barn_Owl: 'farmland',
+  Barn_Swallow: 'farmland',
+  Common_Buzzard: 'farmland',
+  Common_Kestrel: 'farmland',
+  Common_Linnet: 'farmland',
+  Common_Pheasant: 'farmland',
+  Common_Raven: 'farmland',
+  Eurasian_Skylark: 'farmland',
+  Grey_Partridge: 'farmland',
+  Mistle_Thrush: 'farmland',
+  Northern_Lapwing: 'farmland',
+  Red_Kite: 'farmland',
+  Rook: 'farmland',
+  Stock_Dove: 'farmland',
+  Yellowhammer: 'farmland',
+};
+
+// Migratory status. Only species that genuinely leave Britain entirely for
+// an African/southern-European winter count as Summer Visitors here —
+// species that get winter influxes of continental birds while a resident
+// UK population stays put (e.g. gulls, wagtails) are still Residents,
+// since the species itself is present in the UK year-round.
+export const MIGRATION_GROUPS = [
+  { id: 'summer', label: 'Summer Visitors' },
+  { id: 'resident', label: 'Year-round Residents' },
+];
+
+const SUMMER_VISITOR_IDS = new Set([
+  'Barn_Swallow',
+  'Common_Swift',
+  'House_Martin',
+  'Common_Chiffchaff',
+  'Willow_Warbler',
+  'Common_Blackcap',
+]);
+
 // Matches the formatting ResultCard.js applies to a raw predicted_class.
 export function formatSpeciesName(id) {
   if (!id) return '';
@@ -145,6 +353,9 @@ export const SPECIES = SPECIES_IDS.map((id) => ({
   id,
   name: formatSpeciesName(id),
   taxonId: TAXON_IDS[id],
+  typeGroup: TYPE_GROUP_BY_SPECIES[id],
+  habitat: HABITAT_BY_SPECIES[id],
+  migration: SUMMER_VISITOR_IDS.has(id) ? 'summer' : 'resident',
 })).sort((a, b) => a.name.localeCompare(b.name));
 
 export const SPECIES_COUNT = SPECIES.length;

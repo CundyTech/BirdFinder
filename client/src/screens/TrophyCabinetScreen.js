@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import styles from '../styles';
-import useTrophies from '../hooks/useTrophies';
+import useTrophyCategories from '../hooks/useTrophyCategories';
 import TrophyCard from '../components/TrophyCard';
 
 export default function TrophyCabinetScreen({ onBack, onOpenSpecies }) {
-  const trophies = useTrophies();
-  const [expandedLabel, setExpandedLabel] = useState(null);
+  const categories = useTrophyCategories();
+  const [expandedKey, setExpandedKey] = useState(null);
 
-  const unlockedCount = trophies ? trophies.filter((t) => t.unlocked).length : 0;
+  const allTrophies = categories.flatMap((c) => c.trophies || []);
+  const unlockedCount = allTrophies.filter((t) => t.unlocked).length;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -25,7 +26,7 @@ export default function TrophyCabinetScreen({ onBack, onOpenSpecies }) {
         <View style={styles.subHeaderTitleWrap}>
           <Text style={styles.subHeaderTitle}>Trophy Cabinet</Text>
           <Text style={styles.subHeaderSubtitle}>
-            {trophies ? `${unlockedCount} / ${trophies.length} trophies earned` : 'Loading...'}
+            {allTrophies.length > 0 ? `${unlockedCount} / ${allTrophies.length} trophies earned` : 'Loading...'}
           </Text>
         </View>
       </View>
@@ -35,22 +36,42 @@ export default function TrophyCabinetScreen({ onBack, onOpenSpecies }) {
         showsVerticalScrollIndicator={false}
         style={styles.mainContent}
       >
-        {!trophies ? (
-          <View style={styles.referenceLoading}>
-            <ActivityIndicator size="small" color={styles.PALETTE.primary} />
-            <Text style={styles.referenceLoadingText}>Loading rarity data...</Text>
-          </View>
-        ) : (
-          trophies.map((trophy) => (
-            <TrophyCard
-              key={trophy.label}
-              trophy={trophy}
-              expanded={expandedLabel === trophy.label}
-              onToggleExpand={() => setExpandedLabel((current) => (current === trophy.label ? null : trophy.label))}
-              onOpenSpecies={onOpenSpecies}
-            />
-          ))
-        )}
+        {categories.map((category) => {
+          const categoryUnlocked = category.trophies ? category.trophies.filter((t) => t.unlocked).length : 0;
+          return (
+            <View key={category.id} style={styles.trophyCategorySection}>
+              <View style={styles.trophyCategoryHeader}>
+                <Text style={styles.trophyCategoryTitle}>{category.label}</Text>
+                {category.trophies && (
+                  <Text style={styles.trophyCategoryProgress}>
+                    {categoryUnlocked} / {category.trophies.length}
+                  </Text>
+                )}
+              </View>
+              <Text style={styles.trophyCategoryDescription}>{category.description}</Text>
+
+              {!category.trophies ? (
+                <View style={styles.referenceLoading}>
+                  <ActivityIndicator size="small" color={styles.PALETTE.primary} />
+                  <Text style={styles.referenceLoadingText}>Loading rarity data...</Text>
+                </View>
+              ) : (
+                category.trophies.map((trophy) => {
+                  const key = `${category.id}:${trophy.label}`;
+                  return (
+                    <TrophyCard
+                      key={key}
+                      trophy={trophy}
+                      expanded={expandedKey === key}
+                      onToggleExpand={() => setExpandedKey((current) => (current === key ? null : key))}
+                      onOpenSpecies={onOpenSpecies}
+                    />
+                  );
+                })
+              )}
+            </View>
+          );
+        })}
       </ScrollView>
     </SafeAreaView>
   );

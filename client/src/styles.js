@@ -861,6 +861,30 @@ const styles = StyleSheet.create({
   },
 
   // Trophy cabinet
+  trophyCategorySection: {
+    marginBottom: 26,
+  },
+  trophyCategoryHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'baseline',
+    marginBottom: 2,
+  },
+  trophyCategoryTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: PALETTE.textOnDark,
+  },
+  trophyCategoryProgress: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: PALETTE.primary,
+  },
+  trophyCategoryDescription: {
+    fontSize: 12,
+    color: PALETTE.mutedText,
+    marginBottom: 12,
+  },
   trophyCard: {
     backgroundColor: PALETTE.cardAlt,
     borderRadius: 16,
@@ -913,10 +937,12 @@ const styles = StyleSheet.create({
     borderRadius: 3,
     backgroundColor: PALETTE.accent,
   },
+  trophyExpandedBody: {
+    marginTop: 14,
+  },
   trophySpeciesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 14,
     gap: 8,
   },
   trophySpeciesChip: {

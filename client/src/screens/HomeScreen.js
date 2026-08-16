@@ -7,8 +7,7 @@ import styles from '../styles';
 import { MIN_LOADING_DURATION_MS } from '../config';
 import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
 import { recordSighting } from '../store/lifeListSlice';
-import useTrophies from '../hooks/useTrophies';
-import { RARITY_TIER_COUNT } from '../rarity';
+import useTrophyCategories from '../hooks/useTrophyCategories';
 
 import Header from '../components/Header';
 import PlaceholderCard from '../components/PlaceholderCard';
@@ -32,8 +31,10 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
 
     const dispatch = useDispatch();
     const sightingsCount = useSelector((state) => state.lifeList.sightings.length);
-    const trophies = useTrophies();
-    const unlockedTrophyCount = trophies ? trophies.filter((t) => t.unlocked).length : 0;
+    const trophyCategories = useTrophyCategories();
+    const allTrophies = trophyCategories.flatMap((c) => c.trophies || []);
+    const unlockedTrophyCount = allTrophies.filter((t) => t.unlocked).length;
+    const totalTrophyCount = allTrophies.length;
 
     const { data: healthData, error: healthQueryError, isFetching: healthLoading, refetch: refetchHealth } = useCheckHealthQuery();
     const [uploadPhoto] = useUploadPhotoMutation();
@@ -153,7 +154,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                                 </View>
                             </View>
                             <View style={styles.tileCountBadge}>
-                                <Text style={styles.tileCountBadgeText}>{unlockedTrophyCount}/{RARITY_TIER_COUNT}</Text>
+                                <Text style={styles.tileCountBadgeText}>{unlockedTrophyCount}/{totalTrophyCount}</Text>
                             </View>
                         </TouchableOpacity>
 
