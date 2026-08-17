@@ -5,7 +5,9 @@
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
-    "ios": "expo run:ios"
+    "ios": "expo run:ios",
+    "test": "cross-env EXPO_PUBLIC_API_KEY=test-api-key jest",
+    "test:watch": "cross-env EXPO_PUBLIC_API_KEY=test-api-key jest --watch"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.0.4",
@@ -27,6 +29,21 @@
     "react-redux": "^9.3.0"
   },
   "devDependencies": {
-    "eas-cli": "^21.6.0"
+    "cross-env": "^10.1.0",
+    "eas-cli": "^21.6.0",
+    "jest": "~29.7.0",
+    "jest-expo": "~52.0.6"
+  },
+  "jest": {
+    "preset": "jest-expo",
+    "transformIgnorePatterns": [
+      "/node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@sentry/react-native|native-base|react-native-svg|react-redux|@reduxjs/.*|immer)",
+      "/node_modules/react-native-reanimated/plugin/"
+    ],
+    "moduleNameMapper": {
+      "^react-native-vector-icons$": "@expo/vector-icons",
+      "^react-native-vector-icons/(.*)": "@expo/vector-icons/$1",
+      "^@react-native-async-storage/async-storage$": "@react-native-async-storage/async-storage/jest/async-storage-mock"
+    }
   }
 }

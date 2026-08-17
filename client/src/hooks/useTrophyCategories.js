@@ -8,7 +8,7 @@ import { computeSharpEyeTrophy, computeRegularBirderTrophy } from '../achievemen
 // groupDefs is either TYPE_GROUPS/HABITAT_GROUPS/MIGRATION_GROUPS ({id,
 // label}) or RARITY_TIERS ({label, pips} — no id), so keys fall back to
 // label; getGroupIdForSpecies must return the matching one in each case.
-function groupSpecies(groupDefs, getGroupIdForSpecies) {
+export function groupSpecies(groupDefs, getGroupIdForSpecies) {
   const speciesByGroupId = new Map(groupDefs.map((g) => [g.id ?? g.label, []]));
   for (const species of SPECIES) {
     const groupId = getGroupIdForSpecies(species);
@@ -17,7 +17,7 @@ function groupSpecies(groupDefs, getGroupIdForSpecies) {
   return speciesByGroupId;
 }
 
-function makeTrophy(label, species, caughtSpeciesIds) {
+export function makeTrophy(label, species, caughtSpeciesIds) {
   const caughtCount = species.filter((s) => caughtSpeciesIds.has(s.id)).length;
   return {
     type: 'species',
