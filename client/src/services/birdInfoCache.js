@@ -40,3 +40,11 @@ export async function setCachedSpeciesInfo(speciesId, data) {
   cache[speciesId] = data;
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
 }
+
+// Test-only: clears the in-memory memoization so each test starts fresh
+// against whatever's actually in AsyncStorage. Deliberately not
+// jest.resetModules() — that would also reset the AsyncStorage mock's own
+// module-level state, splitting it from whatever this module then reads.
+export function __resetCacheForTests() {
+  cachePromise = null;
+}
