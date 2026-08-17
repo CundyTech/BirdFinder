@@ -1,10 +1,13 @@
 import React from 'react';
 import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useSelector } from 'react-redux';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import styles from '../styles';
 
 export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
   const isHealthy = apiHealth?.status === 'healthy';
   const isUnhealthy = apiHealth?.status === 'unhealthy';
+  const filmBalance = useSelector((state) => state.film.balance);
 
   return (
     <View style={styles.header}>
@@ -15,6 +18,10 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
         <View style={styles.brandTextWrap}>
           <Text style={styles.brandTitle}>Bird Finder UK</Text>
           <Text style={styles.brandSubtitle}>UK bird identification</Text>
+        </View>
+        <View style={styles.filmBadge}>
+          <MaterialCommunityIcons name="filmstrip" size={14} color={styles.PALETTE.accent} />
+          <Text style={styles.filmBadgeText}>{filmBalance}</Text>
         </View>
         {!healthLoading && apiHealth && (
           <View style={[styles.statusIndicator, isHealthy ? styles.statusHealthy : styles.statusUnhealthy]} />

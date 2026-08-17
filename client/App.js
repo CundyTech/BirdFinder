@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar } from 'react-native';
-import { Provider, useDispatch } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store } from './src/store';
 import { hydrateLifeList } from './src/store/lifeListSlice';
+import { hydrateFilm, claimDailyRefill, claimTrophyRewards } from './src/store/filmSlice';
+import useTrophyCategories from './src/hooks/useTrophyCategories';
 import styles from './src/styles';
 import HomeScreen from './src/screens/HomeScreen';
 import LifeListScreen from './src/screens/LifeListScreen';
@@ -18,10 +20,33 @@ function RootNavigator() {
   const dispatch = useDispatch();
   const [stack, setStack] = useState([{ name: 'home' }]);
   const screen = stack[stack.length - 1];
+  const filmHydrated = useSelector((state) => state.film.hydrated);
+  const trophyCategories = useTrophyCategories();
 
   useEffect(() => {
     dispatch(hydrateLifeList());
+    dispatch(hydrateFilm());
   }, [dispatch]);
+
+  // Daily free Film — safe to dispatch on every launch, the storage layer
+  // no-ops if today's already been claimed.
+  useEffect(() => {
+    if (filmHydrated) dispatch(claimDailyRefill());
+  }, [filmHydrated, dispatch]);
+
+  // Trophy payouts — recomputed (and re-dispatched) whenever trophy state
+  // changes; already-claimed trophies are filtered out in the storage
+  // layer, so passing the full unlocked list every time is intentional,
+  // not a bug.
+  useEffect(() => {
+    if (!filmHydrated) return;
+    const unlockedKeys = trophyCategories.flatMap((category) =>
+      (category.trophies || [])
+        .filter((trophy) => trophy.unlocked)
+        .map((trophy) => `${category.id}:${trophy.label}`)
+    );
+    if (unlockedKeys.length > 0) dispatch(claimTrophyRewards(unlockedKeys));
+  }, [filmHydrated, trophyCategories, dispatch]);
 
   const push = (next) => setStack((s) => [...s, next]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));

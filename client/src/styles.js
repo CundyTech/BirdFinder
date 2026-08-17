@@ -70,6 +70,20 @@ const styles = StyleSheet.create({
     color: PALETTE.mutedText,
     marginTop: 2,
   },
+  filmBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.14)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 4,
+  },
+  filmBadgeText: {
+    color: PALETTE.accent,
+    fontSize: 13,
+    fontWeight: '700',
+  },
   statusIndicator: {
     width: 12,
     height: 12,

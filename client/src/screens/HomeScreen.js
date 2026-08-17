@@ -7,6 +7,7 @@ import styles from '../styles';
 import { MIN_LOADING_DURATION_MS } from '../config';
 import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
 import { recordSighting } from '../store/lifeListSlice';
+import { spendFilm } from '../store/filmSlice';
 import useTrophyCategories from '../hooks/useTrophyCategories';
 
 import Header from '../components/Header';
@@ -31,6 +32,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
 
     const dispatch = useDispatch();
     const sightingsCount = useSelector((state) => state.lifeList.sightings.length);
+    const filmBalance = useSelector((state) => state.film.balance);
     const trophyCategories = useTrophyCategories();
     const allTrophies = trophyCategories.flatMap((c) => c.trophies || []);
     const unlockedTrophyCount = allTrophies.filter((t) => t.unlocked).length;
@@ -46,6 +48,14 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
             : null;
 
     const pickImage = async () => {
+        if (filmBalance <= 0) {
+            Alert.alert(
+                'Out of Film',
+                "You're out of Film for now. Unlock a trophy for a bonus reel, or come back tomorrow for a free refill."
+            );
+            return;
+        }
+
         const permission = await ImagePicker.requestCameraPermissionsAsync();
         if (permission.status !== 'granted') {
             if (permission.canAskAgain === false) {
@@ -92,6 +102,10 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
             });
 
             const json = await uploadPhoto(formData).unwrap();
+            // Only a successful identification costs Film — a failed
+            // request (network/server error) didn't actually use the
+            // service, so it shouldn't cost the user anything.
+            dispatch(spendFilm());
             setResult(json);
         } catch (err) {
             setError(describeQueryError(err, 'Server error'));
