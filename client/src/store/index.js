@@ -1,7 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { api } from './services/api';
-import { birdInfoApi } from './services/birdInfoApi';
-import lifeListReducer from './store/lifeListSlice';
+import { api } from '../services/api';
+import { birdInfoApi } from '../services/birdInfoApi';
+import lifeListReducer from './lifeListSlice';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 export const store = configureStore({

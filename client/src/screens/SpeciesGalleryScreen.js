@@ -3,7 +3,7 @@ import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Image, Alert } 
 import { useDispatch, useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
 import styles from '../styles';
-import { formatSpeciesName } from '../species';
+import { formatSpeciesName } from '../domain/species';
 import ImageLightbox from '../components/ImageLightbox';
 import SpeciesFactsCard from '../components/SpeciesFactsCard';
 import { deleteSighting } from '../store/lifeListSlice';

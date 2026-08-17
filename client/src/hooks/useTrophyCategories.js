@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useGetUkRarityMapQuery } from '../services/birdInfoApi';
-import { computeRarityTiers, RARITY_TIERS } from '../rarity';
-import { SPECIES, TYPE_GROUPS, HABITAT_GROUPS, MIGRATION_GROUPS } from '../species';
-import { computeSharpEyeTrophy, computeRegularBirderTrophy } from '../achievements';
+import { computeRarityTiers, RARITY_TIERS } from '../domain/rarity';
+import { SPECIES, TYPE_GROUPS, HABITAT_GROUPS, MIGRATION_GROUPS } from '../domain/species';
+import { computeSharpEyeTrophy, computeRegularBirderTrophy } from '../domain/achievements';
 
 // groupDefs is either TYPE_GROUPS/HABITAT_GROUPS/MIGRATION_GROUPS ({id,
 // label}) or RARITY_TIERS ({label, pips} — no id), so keys fall back to

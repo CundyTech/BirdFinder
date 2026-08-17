@@ -3,7 +3,7 @@ import { SafeAreaView, ScrollView, View, Text, TouchableOpacity } from 'react-na
 import { useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
 import styles from '../styles';
-import { SPECIES, SPECIES_COUNT } from '../species';
+import { SPECIES, SPECIES_COUNT } from '../domain/species';
 import SpeciesTile from '../components/SpeciesTile';
 
 export default function LifeListScreen({ onBack, onOpenSpecies }) {

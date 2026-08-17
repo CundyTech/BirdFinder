@@ -1,5 +1,5 @@
 import { groupSpecies, makeTrophy } from './useTrophyCategories';
-import { SPECIES } from '../species';
+import { SPECIES } from '../domain/species';
 
 describe('groupSpecies', () => {
   it('groups by id when group defs have one (TYPE_GROUPS/HABITAT_GROUPS/MIGRATION_GROUPS shape)', () => {

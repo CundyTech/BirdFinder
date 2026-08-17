@@ -1,4 +1,4 @@
-import { LOW_CONFIDENCE_THRESHOLD } from './config';
+import { LOW_CONFIDENCE_THRESHOLD } from '../config';
 
 // Behavior-based trophies — about how you use the app (accuracy, regular
 // use) rather than which species you've caught, so they're computed

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useGetUkRarityMapQuery } from '../services/birdInfoApi';
-import { computeRarityTiers } from '../rarity';
+import { computeRarityTiers } from '../domain/rarity';
 
 // Rarity is ranked relative to the whole 60-species roster, so every
 // consumer needs the full counts map to rank against — this hook does

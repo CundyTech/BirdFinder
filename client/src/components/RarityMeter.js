@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import styles from '../styles';
-import { RARITY_MAX_PIPS } from '../rarity';
+import { RARITY_MAX_PIPS } from '../domain/rarity';
 
 // Shared between the full species facts card and the compact life-list
 // tile — `compact` swaps in smaller pips and drops the "UK rarity" label

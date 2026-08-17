@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery, retry } from '@reduxjs/toolkit/query/react';
 import { getCachedSpeciesInfo, setCachedSpeciesInfo } from './birdInfoCache';
 import { getCachedRarityMap, setCachedRarityMap } from './ukRarityCache';
 import { createSemaphore } from './asyncSemaphore';
-import { SPECIES, TAXON_IDS } from '../species';
+import { SPECIES, TAXON_IDS } from '../domain/species';
 
 // Free iNaturalist API, no key required.
 const TAXA_BASE_URL = 'https://api.inaturalist.org/v1/taxa';

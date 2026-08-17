@@ -6,7 +6,7 @@ import { useGetSpeciesInfoQuery } from '../services/birdInfoApi';
 import useSpeciesRarity from '../hooks/useSpeciesRarity';
 import RarityMeter from './RarityMeter';
 import MigrationMap from './MigrationMap';
-import { BIRD_PROFILES, MIGRATION_ROUTES } from '../birdProfiles';
+import { BIRD_PROFILES, MIGRATION_ROUTES } from '../domain/birdProfiles';
 
 export default function SpeciesFactsCard({ speciesId, speciesName }) {
   const { data: info, isLoading, isError, refetch } = useGetSpeciesInfoQuery(speciesId, {
