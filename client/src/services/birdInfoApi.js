@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery, retry } from '@reduxjs/toolkit/query/react';
 import { getCachedSpeciesInfo, setCachedSpeciesInfo } from './birdInfoCache';
 import { getCachedRarityMap, setCachedRarityMap } from './ukRarityCache';
 import { createSemaphore } from './asyncSemaphore';
-import { SPECIES } from '../species';
+import { SPECIES, TAXON_IDS } from '../species';
 
 // Free iNaturalist API, no key required.
 const TAXA_BASE_URL = 'https://api.inaturalist.org/v1/taxa';
@@ -80,18 +80,16 @@ export const birdInfoApi = createApi({
   baseQuery: baseQueryWithRetry,
   endpoints: (builder) => ({
     getSpeciesInfo: builder.query({
-      // The search endpoint gives the photo/status/scientific name, but
-      // ancestor taxonomy (family/order) and the Wikipedia summary only
-      // come back from the single-taxon endpoint — queryFn lets us sequence
-      // both calls through the same baseQuery for one cache entry.
-      async queryFn(commonName, _queryApi, _extraOptions, baseQuery) {
+      // Takes our internal speciesId (e.g. "Common_Kestrel"), not a
+      // display name — see fetchSpeciesInfo for why.
+      async queryFn(speciesId, _queryApi, _extraOptions, baseQuery) {
         // Species facts barely change — check the on-disk cache before
         // touching the network (or the throttle queue) at all, so cache
         // hits return instantly instead of waiting behind live lookups.
-        const cached = await getCachedSpeciesInfo(commonName);
+        const cached = await getCachedSpeciesInfo(speciesId);
         if (cached !== undefined) return { data: cached };
 
-        return runThrottled(() => fetchSpeciesInfo(commonName, baseQuery));
+        return runThrottled(() => fetchSpeciesInfo(speciesId, baseQuery));
       },
       // Species facts don't change — once fetched, never treat as stale.
       keepUnusedDataFor: Infinity,
@@ -127,56 +125,50 @@ export const birdInfoApi = createApi({
   }),
 });
 
-async function fetchSpeciesInfo(commonName, baseQuery) {
+// One direct GET by our already-verified taxonId (see species.js), not a
+// fuzzy name search. Two problems that fixed: some display names don't
+// match iNaturalist's primary common name well enough for text search to
+// find the right (or any) taxon; and the old two-call search-then-detail
+// sequence could cache a *partial* result to disk forever if the second
+// call happened to fail after the first succeeded. A single call means
+// either it fully succeeds and gets cached, or it fails and nothing is
+// cached — so a transient failure just retries next time instead of
+// leaving a permanently broken card.
+async function fetchSpeciesInfo(speciesId, baseQuery) {
   try {
-    const searchResult = await baseQuery(
-      `?q=${encodeURIComponent(commonName)}&rank=species&iconic_taxa[]=Aves&per_page=1`
-    );
-    // A real request failure (network/timeout/5xx) is retryable —
-    // surface it as an error. "No match found" is not a failure.
-    if (searchResult.error) return { error: searchResult.error };
+    const taxonId = TAXON_IDS[speciesId];
+    if (!taxonId) return { data: null };
 
-    const match = searchResult.data?.results?.[0];
-    if (!match) return { data: null };
+    const result = await baseQuery(`/${taxonId}`);
+    if (result.error) return { error: result.error };
 
-    let ancestors = [];
-    let summary = '';
-    let wikipediaUrl = null;
-    let range = null;
-    let galleryPhotos = [];
-    const detailResult = await baseQuery(`/${match.id}`);
-    if (!detailResult.error) {
-      const detail = detailResult.data?.results?.[0];
-      ancestors = detail?.ancestors || [];
-      summary = truncate(stripHtml(detail?.wikipedia_summary), SUMMARY_MAX_LENGTH);
-      wikipediaUrl = detail?.wikipedia_url || null;
-      range = summarizeRange(detail?.listed_taxa);
-      galleryPhotos = (detail?.taxon_photos || [])
-        .map((tp) => tp.photo?.medium_url)
-        .filter((url) => url && url !== match.default_photo?.medium_url)
-        .slice(0, MAX_GALLERY_PHOTOS);
-    }
+    const taxon = result.data?.results?.[0];
+    if (!taxon) return { data: null };
 
+    const ancestors = taxon.ancestors || [];
     const family = ancestors.find((a) => a.rank === 'family');
     const order = ancestors.find((a) => a.rank === 'order');
 
     const data = {
-      commonName: match.preferred_common_name || commonName,
-      scientificName: match.name || null,
-      photoUrl: match.default_photo?.medium_url || null,
-      photoAttribution: match.default_photo?.attribution || null,
-      conservationStatus: match.conservation_status?.status_name || null,
+      commonName: taxon.preferred_common_name || null,
+      scientificName: taxon.name || null,
+      photoUrl: taxon.default_photo?.medium_url || null,
+      photoAttribution: taxon.default_photo?.attribution || null,
+      conservationStatus: taxon.conservation_status?.status_name || null,
       family: family?.name || null,
       order: order?.name || null,
       // Global popularity on iNaturalist, not UK-specific — the rarity
       // meter uses getUkRarityMap's bulk, UK-scoped counts instead.
-      observationsCount: typeof match.observations_count === 'number' ? match.observations_count : null,
-      summary,
-      wikipediaUrl,
-      range,
-      galleryPhotos,
+      observationsCount: typeof taxon.observations_count === 'number' ? taxon.observations_count : null,
+      summary: truncate(stripHtml(taxon.wikipedia_summary), SUMMARY_MAX_LENGTH),
+      wikipediaUrl: taxon.wikipedia_url || null,
+      range: summarizeRange(taxon.listed_taxa),
+      galleryPhotos: (taxon.taxon_photos || [])
+        .map((tp) => tp.photo?.medium_url)
+        .filter((url) => url && url !== taxon.default_photo?.medium_url)
+        .slice(0, MAX_GALLERY_PHOTOS),
     };
-    await setCachedSpeciesInfo(commonName, data);
+    await setCachedSpeciesInfo(speciesId, data);
     return { data };
   } catch (err) {
     return { error: { status: 'FETCH_ERROR', error: err?.message || 'Unknown error' } };

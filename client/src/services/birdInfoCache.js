@@ -1,6 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const STORAGE_KEY = 'birdInfo.cache.v1';
+// v2: keyed by our internal speciesId (e.g. "Common_Kestrel") instead of
+// a display name — bumped so any old entries (including ones from the
+// previous name-search flow that could get stuck cached with missing
+// family/order/summary after a partial failure) are cleanly abandoned
+// rather than mixed in under different-looking keys.
+const STORAGE_KEY = 'birdInfo.cache.v2';
 
 // Loaded once and shared: on a cold start, ~60 species tiles all call
 // getCachedSpeciesInfo at once — this ensures they await one AsyncStorage
@@ -25,13 +30,13 @@ function loadCache() {
 
 // undefined = never fetched (should look it up); anything else, including
 // null, is a cached result that shouldn't trigger another network call.
-export async function getCachedSpeciesInfo(commonName) {
+export async function getCachedSpeciesInfo(speciesId) {
   const cache = await loadCache();
-  return Object.prototype.hasOwnProperty.call(cache, commonName) ? cache[commonName] : undefined;
+  return Object.prototype.hasOwnProperty.call(cache, speciesId) ? cache[speciesId] : undefined;
 }
 
-export async function setCachedSpeciesInfo(commonName, data) {
+export async function setCachedSpeciesInfo(speciesId, data) {
   const cache = await loadCache();
-  cache[commonName] = data;
+  cache[speciesId] = data;
   await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
 }

@@ -178,76 +178,6 @@ const styles = StyleSheet.create({
   tileLeft: { flexDirection: 'row', alignItems: 'center' },
   tileSub: { color: PALETTE.mutedText, fontSize: 13 },
 
-  // Nested inside resultCard — no border of its own, grouped by fill only
-  predictionsCard: {
-    backgroundColor: PALETTE.cardAlt,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 16,
-  },
-  predictionsTitle: {
-    color: PALETTE.textOnDark,
-    fontSize: 15,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  predictionsHint: {
-    color: PALETTE.mutedText,
-    fontSize: 12,
-    marginBottom: 10,
-  },
-  predictionRow: {
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#111a24',
-  },
-  predictionRowLast: {
-    borderBottomWidth: 0,
-  },
-  predictionRowSelected: {
-    backgroundColor: 'rgba(31, 157, 107, 0.10)',
-    borderRadius: 10,
-    marginHorizontal: -8,
-    paddingHorizontal: 8,
-  },
-  predictionRowTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  predictionRank: {
-    width: 30,
-    height: 30,
-    borderRadius: 10,
-    backgroundColor: '#0b1620',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  predictionRankSelected: {
-    backgroundColor: PALETTE.primary,
-  },
-  predictionRankText: {
-    color: PALETTE.textOnDark,
-    fontWeight: '700',
-  },
-  predictionLabel: {
-    flex: 1,
-    color: PALETTE.textOnDark,
-    fontSize: 15,
-  },
-  predictionBarTrack: {
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: PALETTE.cardBorder,
-    overflow: 'hidden',
-  },
-  predictionBarFill: {
-    height: '100%',
-    borderRadius: 2,
-    backgroundColor: PALETTE.primary,
-  },
-
   bottomBrand: {
     alignItems: 'center',
     marginTop: 28,
@@ -360,17 +290,21 @@ const styles = StyleSheet.create({
     marginHorizontal: -20,
     marginBottom: 14,
   },
-  resultCardFill: {
-    flex: 1,
+  resultHeroImageWrapper: {
+    width: '100%',
+    aspectRatio: 1.3,
+    borderRadius: 16,
+    overflow: 'hidden',
+    backgroundColor: PALETTE.surface,
+    marginBottom: 16,
   },
-  resultImageContainer: {
-    marginBottom: 22,
-    alignItems: 'center',
+  resultHeroImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
-  resultHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+  confidenceBadgeRow: {
+    alignSelf: 'flex-start',
     marginBottom: 12,
   },
   confidenceBadge: {
@@ -390,54 +324,6 @@ const styles = StyleSheet.create({
   confidenceBadgeLow: {
     backgroundColor: PALETTE.accent,
   },
-  lowConfidenceBanner: {
-    backgroundColor: 'rgba(245, 158, 11, 0.14)',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 16,
-  },
-  lowConfidenceText: {
-    color: PALETTE.accent,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  uncertainHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 6,
-  },
-  uncertainHeaderTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: PALETTE.textOnDark,
-  },
-  uncertainHeaderSubtitle: {
-    color: PALETTE.mutedText,
-    fontSize: 13,
-    lineHeight: 18,
-    marginBottom: 12,
-  },
-  uncertainImageWrapper: {
-    flex: 1,
-    width: '100%',
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: PALETTE.surface,
-  },
-  uncertainImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  birdName: {
-    flexShrink: 1,
-    fontSize: 24,
-    fontWeight: '800',
-    color: PALETTE.textOnDark,
-    marginRight: 12,
-  },
-
   // Species reference lookup (real photo + stats from iNaturalist)
   referenceLoading: {
     flexDirection: 'row',
@@ -469,61 +355,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
   },
-  referenceCard: {
-    backgroundColor: PALETTE.cardAlt,
-    borderRadius: 16,
-    padding: 12,
-    marginBottom: 20,
-  },
-  subImageRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-    gap: 12,
-  },
-  subImageColumn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  subImageWrapper: {
-    width: '100%',
-    aspectRatio: 1.12,
-    borderRadius: 14,
-    overflow: 'hidden',
-    backgroundColor: PALETTE.surface,
-    marginBottom: 8,
-  },
-  subImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  subImageLabel: {
-    color: PALETTE.mutedText,
-    fontSize: 12,
-    textTransform: 'uppercase',
-  },
-  referenceAttribution: {
-    color: PALETTE.mutedText,
-    fontSize: 11,
-    marginBottom: 16,
-  },
-  galleryRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 16,
-  },
-  galleryThumb: {
-    flex: 1,
-    aspectRatio: 1,
-    borderRadius: 10,
-    backgroundColor: PALETTE.surface,
-  },
-  galleryThumbImage: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 10,
-  },
   referenceStatsGrid: {
     marginBottom: 12,
   },
@@ -549,36 +380,6 @@ const styles = StyleSheet.create({
   referenceStatStatus: {
     color: PALETTE.accent,
   },
-  rangeSection: {
-    marginBottom: 12,
-  },
-  rangeRow: {
-    marginBottom: 8,
-  },
-  rangeLabel: {
-    color: PALETTE.mutedText,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-    marginBottom: 2,
-  },
-  rangeValue: {
-    color: PALETTE.textOnDark,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  referenceSummary: {
-    color: PALETTE.mutedText,
-    fontSize: 13,
-    lineHeight: 19,
-    marginBottom: 8,
-  },
-  wikiLink: {
-    color: PALETTE.primary,
-    fontSize: 13,
-    fontWeight: '700',
-  },
-
   birdClass: {
     fontSize: 14,
     color: PALETTE.mutedText,
@@ -669,6 +470,121 @@ const styles = StyleSheet.create({
   saveButtonTextSaved: {
     color: PALETTE.primary,
   },
+
+  // Tinder-style candidate matcher (low-confidence result)
+  swipeMatcherContainer: {
+    marginBottom: 16,
+  },
+  swipeMatcherTitle: {
+    fontSize: 19,
+    fontWeight: '800',
+    color: PALETTE.textOnDark,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  swipeMatcherHint: {
+    fontSize: 12,
+    color: PALETTE.mutedText,
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  swipeCard: {
+    backgroundColor: PALETTE.cardAlt,
+    borderRadius: 20,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: PALETTE.cardBorder,
+    marginBottom: 16,
+  },
+  swipeCardImageRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 12,
+  },
+  swipeCardImageColumn: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  swipeCardImage: {
+    width: '100%',
+    aspectRatio: 1,
+    borderRadius: 14,
+    resizeMode: 'cover',
+    backgroundColor: PALETTE.surface,
+  },
+  swipeCardImagePlaceholder: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  swipeCardImageCaption: {
+    color: PALETTE.mutedText,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+    marginTop: 6,
+  },
+  swipeCardName: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: PALETTE.textOnDark,
+    textAlign: 'center',
+  },
+  swipeControlsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    marginBottom: 14,
+  },
+  swipeArrowButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: PALETTE.cardAlt,
+    borderWidth: 1,
+    borderColor: PALETTE.cardBorder,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  matchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: PALETTE.primary,
+    borderRadius: 30,
+    paddingVertical: 14,
+    paddingHorizontal: 22,
+    gap: 8,
+  },
+  matchButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  swipeDotsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  swipeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: PALETTE.cardBorder,
+  },
+  swipeDotActive: {
+    width: 18,
+    backgroundColor: PALETTE.primary,
+  },
+  swipeAgainLink: {
+    color: PALETTE.primary,
+    fontSize: 13,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 12,
+    textDecorationLine: 'underline',
+  },
+
   actionPanel: {
     position: 'absolute',
     bottom: 18,
@@ -1043,6 +959,105 @@ const styles = StyleSheet.create({
     color: PALETTE.textOnDark,
     fontSize: 13,
     fontWeight: '700',
+  },
+
+  // "Did you know?" fun fact (species facts card)
+  funFactBox: {
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  funFactLabel: {
+    color: PALETTE.accent,
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: 4,
+  },
+  funFactText: {
+    color: PALETTE.textOnDark,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+
+  // Prey / predators (species facts card)
+  preyPredatorRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  preyPredatorItem: {
+    flex: 1,
+    backgroundColor: PALETTE.surface,
+    borderRadius: 12,
+    padding: 10,
+  },
+  preyPredatorLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    gap: 5,
+  },
+  preyPredatorLabel: {
+    color: PALETTE.mutedText,
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  preyPredatorValue: {
+    color: PALETTE.textOnDark,
+    fontSize: 12,
+    lineHeight: 17,
+  },
+
+  // Migration (species facts card)
+  migrationSection: {
+    marginBottom: 4,
+  },
+  migrationSectionTitle: {
+    color: PALETTE.textOnDark,
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 10,
+  },
+  migrationResidentText: {
+    color: PALETTE.mutedText,
+    fontSize: 13,
+    fontStyle: 'italic',
+  },
+  migrationMapCard: {
+    backgroundColor: PALETTE.surface,
+    borderRadius: 12,
+    padding: 12,
+  },
+  migrationLabelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  migrationLabelItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  migrationDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  migrationLabelCaption: {
+    color: PALETTE.mutedText,
+    fontSize: 10,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  migrationLabelText: {
+    color: PALETTE.textOnDark,
+    fontSize: 12,
+    fontWeight: '600',
   },
 
   // Per-species photo gallery

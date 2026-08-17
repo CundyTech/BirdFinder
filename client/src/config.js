@@ -15,18 +15,11 @@ if (!API_KEY) {
   console.log(`Loaded EXPO_PUBLIC_API_KEY (masked=${masked} len=${API_KEY.length})`);
 }
 
-// Below this confidence (%), the low-confidence warning banner shows,
-// suggesting a retake.
+// Below this confidence (%), the result is treated as not a confident
+// match — the swipe matcher shows so the user can compare and confirm
+// which candidate is actually right, instead of presenting a shaky top-1
+// guess as if it were settled.
 export const LOW_CONFIDENCE_THRESHOLD = 90;
-
-// Below this stricter confidence (%), the app won't auto-guess a species at
-// all — it shows improvement tips and a tappable list of candidates instead
-// of presenting a shaky top-1 guess as if it were a confirmed result.
-export const UNCERTAIN_THRESHOLD = 30;
-
-// Debug: force species detail to always show for the top guess, bypassing
-// the uncertain-result flow above regardless of actual confidence.
-export const DEBUG_ALWAYS_SHOW_SPECIES_DETAILS = false;
 
 // Minimum time the loading screen stays up, even if the server responds
 // faster — avoids a jarring flash on quick responses.

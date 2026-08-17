@@ -72,7 +72,7 @@ const SPECIES_IDS = [
 // UK/trained-model name for the same species (e.g. Common Pheasant is
 // listed there as "Ring-necked Pheasant"; Pied Wagtail, the UK subspecies,
 // rolls up under the species-level "White Wagtail").
-const TAXON_IDS = {
+export const TAXON_IDS = {
   Barn_Owl: 20445,
   Barn_Swallow: 11901,
   Black_headed_Gull: 144510,

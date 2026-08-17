@@ -30,7 +30,7 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
 
       {!healthLoading && isUnhealthy && (
         <TouchableOpacity style={styles.healthBannerError} onPress={onRetryHealth}>
-          <Text style={styles.healthBannerErrorText}>Can't reach the server — tap to retry</Text>
+          <Text style={styles.healthBannerErrorText}>Can't reach the server, tap to retry</Text>
         </TouchableOpacity>
       )}
     </View>
