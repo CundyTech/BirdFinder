@@ -4,8 +4,11 @@ import filmReducer, {
   spendFilm,
   claimDailyRefill,
   claimTrophyRewards,
+  grantAdReward,
   DAILY_REFILL_AMOUNT,
   TROPHY_REWARD_AMOUNT,
+  AD_REWARD_AMOUNT,
+  AD_DAILY_CAP,
 } from './filmSlice';
 import * as filmStorage from '../services/filmStorage';
 
@@ -28,12 +31,20 @@ describe('filmSlice', () => {
       balance: 0,
       lastRefillDate: null,
       claimedTrophyKeys: [],
+      adsWatchedToday: 0,
+      adsWatchedDate: null,
       hydrated: false,
     });
   });
 
   it('hydrateFilm loads state from storage and marks the slice hydrated', async () => {
-    const saved = { balance: 5, lastRefillDate: '2026-01-01', claimedTrophyKeys: ['rarity:Rare'] };
+    const saved = {
+      balance: 5,
+      lastRefillDate: '2026-01-01',
+      claimedTrophyKeys: ['rarity:Rare'],
+      adsWatchedToday: 2,
+      adsWatchedDate: '2026-01-01',
+    };
     filmStorage.loadFilmState.mockResolvedValue(saved);
 
     const store = makeStore();
@@ -89,5 +100,22 @@ describe('filmSlice', () => {
 
     expect(filmStorage.claimTrophyRewards).toHaveBeenCalledWith(TROPHY_REWARD_AMOUNT, ['rarity:Very rare']);
     expect(store.getState().film).toMatchObject({ balance: 15, claimedTrophyKeys: ['rarity:Very rare'] });
+  });
+
+  it('grantAdReward calls storage with the configured amount/cap and applies the result', async () => {
+    filmStorage.grantAdReward.mockResolvedValue({
+      state: { balance: 10, lastRefillDate: null, claimedTrophyKeys: [], adsWatchedToday: 1, adsWatchedDate: '2026-08-17' },
+      granted: true,
+    });
+
+    const store = makeStore();
+    await store.dispatch(grantAdReward());
+
+    expect(filmStorage.grantAdReward).toHaveBeenCalledWith(
+      AD_REWARD_AMOUNT,
+      AD_DAILY_CAP,
+      expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/)
+    );
+    expect(store.getState().film.balance).toBe(10);
   });
 });

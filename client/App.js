@@ -4,6 +4,7 @@ import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store } from './src/store';
 import { hydrateLifeList } from './src/store/lifeListSlice';
 import { hydrateFilm, claimDailyRefill, claimTrophyRewards } from './src/store/filmSlice';
+import { hydratePremium } from './src/store/premiumSlice';
 import useTrophyCategories from './src/hooks/useTrophyCategories';
 import styles from './src/styles';
 import HomeScreen from './src/screens/HomeScreen';
@@ -26,6 +27,7 @@ function RootNavigator() {
   useEffect(() => {
     dispatch(hydrateLifeList());
     dispatch(hydrateFilm());
+    dispatch(hydratePremium());
   }, [dispatch]);
 
   // Daily free Film — safe to dispatch on every launch, the storage layer

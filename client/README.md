@@ -84,6 +84,17 @@ cd android
 
 Output APKs land in `android/app/build/outputs/apk/debug/app-debug.apk` and `android/app/build/outputs/apk/release/app-release.apk`. Both are signed with the default debug keystore, so they install directly without setting up a real signing key.
 
+### Ads and in-app purchase (Expo Go no longer works once these are wired in)
+
+The app uses `react-native-google-mobile-ads` (rewarded ads for bonus Film) and `react-native-iap` (one-time "unlock forever" purchase). Both are native modules, so from this point on you need the dev client / local APK built above — Expo Go can't load them.
+
+- **AdMob**: `app.json`'s `react-native-google-mobile-ads` plugin entry currently uses Google's public **test** app IDs (`ca-app-pub-3940256099942544~...`), and `src/hooks/useFilmRewardedAd.js` uses `TestIds.REWARDED`. Swap both for real IDs from the AdMob dashboard before release — test ads show real ad UI but never earn real revenue.
+  - `react-native-google-mobile-ads` is pinned to `14.7.2` (well behind latest) — versions from 15.x onward pull in Google Play Services/UMP releases built with Kotlin 2.1 metadata, which this project's Kotlin 1.9.25 toolchain can't read. Bumping the whole project's Kotlin Gradle Plugin to 2.1.x isn't an option either — React Native 0.76's own bundled Gradle plugin is hard-pinned to Kotlin 1.9.25 internally (`node_modules/@react-native/gradle-plugin/gradle/libs.versions.toml`) and breaks (`Found interface ... but class was expected`) if a newer Kotlin Gradle Plugin ends up on the same buildscript classpath. Re-check this pin (and re-verify with a real `assembleDebug`, not just `expo export`) next time React Native's bundled Kotlin version moves.
+- **IAP**: `react-native-iap` is pinned to `12.16.4` (not the latest major) because newer versions moved to a Nitro-Modules architecture that requires React Native's New Architecture, which this project doesn't have enabled (`newArchEnabled=false` in `android/gradle.properties`). v12 uses the classic bridge and works as-is.
+  - `react-native-iap` supports both the Play Store and Amazon Appstore on Android via Gradle product flavors; `client/plugins/withIapStoreFlavor.js` (a local Expo config plugin) pins the app to the Play flavor so the build can resolve. It reapplies automatically on every `expo prebuild`.
+  - Create a non-consumable/managed product in Google Play Console (and the App Store equivalent for iOS) with the SKU/product ID in `src/services/purchases.js` (`UNLOCK_SKU`, currently `com.cundytech.birdfinder.unlock_forever`).
+  - There's no backend purchase-verification server — `src/hooks/usePurchases.js` trusts the store's purchase-updated event directly once the platform reports it as completed. Fine for a small app; would need server-side receipt verification to be worth hardening against.
+
 ### Install on a phone
 
 1. On the phone: Settings → About phone → tap "Build number" 7 times to enable Developer Options, then Developer options → enable USB debugging.

@@ -4,12 +4,14 @@ import {
   spendFilm as spendFilmInStorage,
   claimDailyRefill as claimDailyRefillInStorage,
   claimTrophyRewards as claimTrophyRewardsInStorage,
+  grantAdReward as grantAdRewardInStorage,
 } from '../services/filmStorage';
 
-// Economy tuning knobs. Ad rewards join this list in phase 2, once a real
-// rewarded-ad SDK exists to call grantAdReward from.
+// Economy tuning knobs.
 export const DAILY_REFILL_AMOUNT = 2;
 export const TROPHY_REWARD_AMOUNT = 10;
+export const AD_REWARD_AMOUNT = 5;
+export const AD_DAILY_CAP = 5;
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10);
@@ -37,12 +39,21 @@ export const claimTrophyRewards = createAsyncThunk(
   }
 );
 
+// Dispatched from the rewarded-ad "earned reward" callback (see
+// hooks/useFilmRewardedAd.js) — never called speculatively before the SDK
+// confirms the user actually watched to completion.
+export const grantAdReward = createAsyncThunk('film/grantAdReward', async () => {
+  return grantAdRewardInStorage(AD_REWARD_AMOUNT, AD_DAILY_CAP, todayKey());
+});
+
 const filmSlice = createSlice({
   name: 'film',
   initialState: {
     balance: 0,
     lastRefillDate: null,
     claimedTrophyKeys: [],
+    adsWatchedToday: 0,
+    adsWatchedDate: null,
     hydrated: false,
   },
   reducers: {},
@@ -60,6 +71,9 @@ const filmSlice = createSlice({
         Object.assign(state, action.payload);
       })
       .addCase(claimTrophyRewards.fulfilled, (state, action) => {
+        Object.assign(state, action.payload.state);
+      })
+      .addCase(grantAdReward.fulfilled, (state, action) => {
         Object.assign(state, action.payload.state);
       });
   },

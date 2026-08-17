@@ -4,6 +4,7 @@ import {
   spendFilm,
   claimDailyRefill,
   claimTrophyRewards,
+  grantAdReward,
   STARTING_BALANCE,
 } from './filmStorage';
 
@@ -20,6 +21,8 @@ describe('filmStorage', () => {
         balance: STARTING_BALANCE,
         lastRefillDate: null,
         claimedTrophyKeys: [],
+        adsWatchedToday: 0,
+        adsWatchedDate: null,
       });
     });
 
@@ -29,6 +32,8 @@ describe('filmStorage', () => {
         balance: STARTING_BALANCE,
         lastRefillDate: null,
         claimedTrophyKeys: [],
+        adsWatchedToday: 0,
+        adsWatchedDate: null,
       });
     });
 
@@ -38,6 +43,8 @@ describe('filmStorage', () => {
         balance: 3,
         lastRefillDate: null,
         claimedTrophyKeys: [],
+        adsWatchedToday: 0,
+        adsWatchedDate: null,
       });
     });
   });
@@ -112,6 +119,36 @@ describe('filmStorage', () => {
 
       expect(state.balance).toBe(STARTING_BALANCE + 20);
       expect(newlyClaimed).toEqual(['types:Tits']);
+    });
+  });
+
+  describe('grantAdReward', () => {
+    it('grants the reward and counts as one watch for the day', async () => {
+      const { state, granted } = await grantAdReward(5, 3, '2026-01-01');
+
+      expect(granted).toBe(true);
+      expect(state.balance).toBe(STARTING_BALANCE + 5);
+      expect(state.adsWatchedToday).toBe(1);
+      expect(state.adsWatchedDate).toBe('2026-01-01');
+    });
+
+    it('stops granting once the daily cap is reached', async () => {
+      await grantAdReward(5, 2, '2026-01-01');
+      await grantAdReward(5, 2, '2026-01-01');
+      const third = await grantAdReward(5, 2, '2026-01-01');
+
+      expect(third.granted).toBe(false);
+      expect(third.state.balance).toBe(STARTING_BALANCE + 10);
+    });
+
+    it('resets the watch count on a new day', async () => {
+      await grantAdReward(5, 1, '2026-01-01');
+      const nextDay = await grantAdReward(5, 1, '2026-01-02');
+
+      expect(nextDay.granted).toBe(true);
+      expect(nextDay.state.adsWatchedToday).toBe(1);
+      expect(nextDay.state.adsWatchedDate).toBe('2026-01-02');
+      expect(nextDay.state.balance).toBe(STARTING_BALANCE + 10);
     });
   });
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
@@ -16,6 +16,7 @@ import ImageCard from '../components/ImageCard';
 import LoadingCard from '../components/LoadingCard';
 import ResultCard from '../components/ResultCard';
 import BirdPatternBackground from '../components/BirdPatternBackground';
+import OutOfFilmModal from '../components/OutOfFilmModal';
 
 // fetchBaseQuery's error shape: { status: <http code> } for a bad response,
 // { status: 'FETCH_ERROR', error: <message> } for a network failure.
@@ -29,14 +30,22 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [showOutOfFilm, setShowOutOfFilm] = useState(false);
 
     const dispatch = useDispatch();
     const sightingsCount = useSelector((state) => state.lifeList.sightings.length);
     const filmBalance = useSelector((state) => state.film.balance);
+    const unlockedForever = useSelector((state) => state.premium.unlockedForever);
     const trophyCategories = useTrophyCategories();
     const allTrophies = trophyCategories.flatMap((c) => c.trophies || []);
     const unlockedTrophyCount = allTrophies.filter((t) => t.unlocked).length;
     const totalTrophyCount = allTrophies.length;
+
+    useEffect(() => {
+        if (showOutOfFilm && (unlockedForever || filmBalance > 0)) {
+            setShowOutOfFilm(false);
+        }
+    }, [showOutOfFilm, unlockedForever, filmBalance]);
 
     const { data: healthData, error: healthQueryError, isFetching: healthLoading, refetch: refetchHealth } = useCheckHealthQuery();
     const [uploadPhoto] = useUploadPhotoMutation();
@@ -48,11 +57,8 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
             : null;
 
     const pickImage = async () => {
-        if (filmBalance <= 0) {
-            Alert.alert(
-                'Out of Film',
-                "You're out of Film for now. Unlock a trophy for a bonus reel, or come back tomorrow for a free refill."
-            );
+        if (!unlockedForever && filmBalance <= 0) {
+            setShowOutOfFilm(true);
             return;
         }
 
@@ -104,8 +110,11 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
             const json = await uploadPhoto(formData).unwrap();
             // Only a successful identification costs Film — a failed
             // request (network/server error) didn't actually use the
-            // service, so it shouldn't cost the user anything.
-            dispatch(spendFilm());
+            // service, so it shouldn't cost the user anything. Unlocked
+            // players don't touch the Film ledger at all.
+            if (!unlockedForever) {
+                dispatch(spendFilm());
+            }
             setResult(json);
         } catch (err) {
             setError(describeQueryError(err, 'Server error'));
@@ -219,6 +228,8 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                     </TouchableOpacity>
                 </View>
             )}
+
+            <OutOfFilmModal visible={showOutOfFilm} onClose={() => setShowOutOfFilm(false)} />
 
         </SafeAreaView>
     );

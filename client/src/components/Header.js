@@ -8,6 +8,7 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
   const isHealthy = apiHealth?.status === 'healthy';
   const isUnhealthy = apiHealth?.status === 'unhealthy';
   const filmBalance = useSelector((state) => state.film.balance);
+  const unlockedForever = useSelector((state) => state.premium.unlockedForever);
 
   return (
     <View style={styles.header}>
@@ -21,7 +22,11 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
         </View>
         <View style={styles.filmBadge}>
           <MaterialCommunityIcons name="filmstrip" size={14} color={styles.PALETTE.accent} />
-          <Text style={styles.filmBadgeText}>{filmBalance}</Text>
+          {unlockedForever ? (
+            <MaterialCommunityIcons name="infinity" size={14} color={styles.PALETTE.accent} />
+          ) : (
+            <Text style={styles.filmBadgeText}>{filmBalance}</Text>
+          )}
         </View>
         {!healthLoading && apiHealth && (
           <View style={[styles.statusIndicator, isHealthy ? styles.statusHealthy : styles.statusUnhealthy]} />

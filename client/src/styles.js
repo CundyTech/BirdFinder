@@ -1140,6 +1140,79 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
+  // Out-of-Film modal
+  filmModalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(5, 7, 10, 0.72)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+  },
+  filmModalCard: {
+    width: '100%',
+    backgroundColor: PALETTE.card,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: PALETTE.cardBorder,
+    padding: 24,
+  },
+  filmModalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: PALETTE.textOnDark,
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  filmModalSubtitle: {
+    fontSize: 13,
+    color: PALETTE.mutedText,
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 18,
+  },
+  filmModalOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: PALETTE.cardAlt,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+  },
+  filmModalOptionDisabled: {
+    opacity: 0.5,
+  },
+  filmModalOptionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  filmModalOptionText: {
+    flex: 1,
+  },
+  filmModalOptionTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: PALETTE.textOnDark,
+  },
+  filmModalOptionSub: {
+    fontSize: 12,
+    color: PALETTE.mutedText,
+    marginTop: 2,
+  },
+  filmModalClose: {
+    alignItems: 'center',
+    paddingVertical: 12,
+    marginTop: 4,
+  },
+  filmModalCloseText: {
+    color: PALETTE.mutedText,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
   PALETTE,
 });
 

@@ -88,6 +88,7 @@ android {
 
     namespace 'com.cundytech.birdfinder'
     defaultConfig {
+        missingDimensionStrategy 'store', 'play'
         applicationId 'com.cundytech.birdfinder'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion

@@ -9,7 +9,13 @@ const STORAGE_KEY = 'film.state.v1';
 export const STARTING_BALANCE = 5;
 
 function defaultState() {
-  return { balance: STARTING_BALANCE, lastRefillDate: null, claimedTrophyKeys: [] };
+  return {
+    balance: STARTING_BALANCE,
+    lastRefillDate: null,
+    claimedTrophyKeys: [],
+    adsWatchedToday: 0,
+    adsWatchedDate: null,
+  };
 }
 
 function sanitize(parsed) {
@@ -18,6 +24,8 @@ function sanitize(parsed) {
     balance: typeof parsed.balance === 'number' ? parsed.balance : STARTING_BALANCE,
     lastRefillDate: typeof parsed.lastRefillDate === 'string' ? parsed.lastRefillDate : null,
     claimedTrophyKeys: Array.isArray(parsed.claimedTrophyKeys) ? parsed.claimedTrophyKeys : [],
+    adsWatchedToday: typeof parsed.adsWatchedToday === 'number' ? parsed.adsWatchedToday : 0,
+    adsWatchedDate: typeof parsed.adsWatchedDate === 'string' ? parsed.adsWatchedDate : null,
   };
 }
 
@@ -74,4 +82,26 @@ export async function claimTrophyRewards(amountPerTrophy, unlockedTrophyKeys) {
   };
   await saveFilmState(updated);
   return { state: updated, newlyClaimed: newKeys };
+}
+
+// Grants a rewarded-ad bonus, up to dailyCap watches per calendar day.
+// Returns { state, granted } — granted is false once the cap's hit for
+// `today`, so the UI can disable the watch-ad option without a separate
+// "how many have I watched" query.
+export async function grantAdReward(amount, dailyCap, today) {
+  const state = await loadFilmState();
+  const watchedToday = state.adsWatchedDate === today ? state.adsWatchedToday : 0;
+
+  if (watchedToday >= dailyCap) {
+    return { state, granted: false };
+  }
+
+  const updated = {
+    ...state,
+    balance: state.balance + amount,
+    adsWatchedToday: watchedToday + 1,
+    adsWatchedDate: today,
+  };
+  await saveFilmState(updated);
+  return { state: updated, granted: true };
 }
