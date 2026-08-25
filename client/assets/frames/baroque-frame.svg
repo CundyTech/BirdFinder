@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500">
+  <defs>
+    <g id="leafBlade">
+      <ellipse cx="0" cy="0" rx="7.5" ry="2.8" fill="#c9962e"/>
+      <line x1="-6" y1="0" x2="6" y2="0" stroke="#f2d488" stroke-width="0.8"/>
+    </g>
+    <g id="scrollMotif">
+      <path d="M6,52 C6,22 22,6 52,6 C36,6 26,16 26,31 C26,41 33,48 43,48 C37,48 32,44 32,38"
+            fill="none" stroke="#d4af37" stroke-width="5" stroke-linecap="round"/>
+      <path d="M6,52 C6,22 22,6 52,6 C36,6 26,16 26,31 C26,41 33,48 43,48 C37,48 32,44 32,38"
+            fill="none" stroke="#f2d488" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M52,6 C52,6 59,9 58,17 C55,12 51,10 46,10" fill="none" stroke="#d4af37" stroke-width="2.8" stroke-linecap="round"/>
+      <circle cx="43" cy="48" r="3.6" fill="#f2d488"/>
+      <use href="#leafBlade" transform="translate(14,40) rotate(60)"/>
+      <use href="#leafBlade" transform="translate(24,20) rotate(20)"/>
+      <use href="#leafBlade" transform="translate(40,9) rotate(-10)"/>
+      <use href="#leafBlade" transform="translate(30,34) rotate(-60)"/>
+    </g>
+    <pattern id="scrollPattern" width="60" height="60" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="60" height="60" fill="#2b1d0f"/>
+      <circle cx="10" cy="10" r="0.8" fill="#3a2a17"/>
+      <circle cx="30" cy="45" r="0.8" fill="#3a2a17"/>
+      <circle cx="50" cy="20" r="0.8" fill="#3a2a17"/>
+      <use href="#scrollMotif"/>
+      <use href="#scrollMotif" transform="translate(60,60) rotate(180)"/>
+    </pattern>
+  </defs>
+
+  <!-- outer scroll-engraved band -->
+  <path fill-rule="evenodd" fill="url(#scrollPattern)"
+        d="M8,8 H392 V492 H8 Z M53,53 H347 V447 H53 Z"/>
+  <rect x="8" y="8" width="384" height="484" fill="none" stroke="#1c140b" stroke-width="2"/>
+
+  <!-- groove separating scroll band from gold molding -->
+  <rect x="53" y="53" width="294" height="394" fill="none" stroke="#1c140b" stroke-width="2.5"/>
+
+  <!-- gold molding profile (concentric rings simulate a rounded bevel) -->
+  <rect x="58" y="58" width="284" height="384" fill="none" stroke="#f2d488" stroke-width="6"/>
+  <rect x="65" y="65" width="270" height="370" fill="none" stroke="#96751d" stroke-width="3"/>
+  <rect x="70" y="70" width="260" height="360" fill="none" stroke="#f2d488" stroke-width="2.5" stroke-dasharray="0.5,5.5" stroke-linecap="round"/>
+
+  <!-- flat gold plateau band -->
+  <path fill-rule="evenodd" fill="#cfa53d"
+        d="M74,74 H326 V426 H74 Z M80,80 H320 V420 H80 Z"/>
+
+  <rect x="80" y="80" width="240" height="340" fill="none" stroke="#f2d488" stroke-width="2.5" stroke-dasharray="0.5,5.5" stroke-linecap="round"/>
+  <rect x="84" y="84" width="232" height="332" fill="none" stroke="#96751d" stroke-width="2.5"/>
+  <rect x="88" y="88" width="224" height="324" fill="none" stroke="#f2d488" stroke-width="4"/>
+
+  <!-- crisp inner edge against the photo window -->
+  <rect x="92" y="92" width="216" height="316" fill="none" stroke="#1c140b" stroke-width="2"/>
+</svg>
