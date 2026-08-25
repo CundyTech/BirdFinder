@@ -1,6 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createSemaphore } from './asyncSemaphore';
 
 const STORAGE_KEY = 'film.state.v1';
+
+// Every exported mutator here does read-modify-write against the same
+// storage key. App.js's trophy-claim effect re-dispatches claimTrophyRewards
+// on every trophy recompute (i.e. on every sighting), and HomeScreen can
+// spend Film around the same time — without this, two overlapping calls can
+// each read the same pre-write state and one update clobbers the other. A
+// semaphore of 1 serializes them into a queue instead (see rewardsStorage.js
+// for the sibling module this pattern was introduced to fix first).
+const withLock = createSemaphore(1);
 
 // Starting balance lives here (not filmSlice.js) since it's part of "what
 // does a fresh save look like", not a game-balance tuning knob — those
@@ -47,22 +57,26 @@ async function saveFilmState(state) {
 // already zero — callers should treat null as "nothing to spend" rather
 // than letting the balance go negative. Gating (blocking the action that
 // would have spent it) is the UI's job; this is just the ledger.
-export async function spendFilm() {
-  const state = await loadFilmState();
-  if (state.balance <= 0) return null;
-  const updated = { ...state, balance: state.balance - 1 };
-  await saveFilmState(updated);
-  return updated;
+export function spendFilm() {
+  return withLock(async () => {
+    const state = await loadFilmState();
+    if (state.balance <= 0) return null;
+    const updated = { ...state, balance: state.balance - 1 };
+    await saveFilmState(updated);
+    return updated;
+  });
 }
 
 // Grants the daily refill if `today` hasn't already been claimed. Returns
 // the state unchanged if it has — safe to call on every app launch.
-export async function claimDailyRefill(amount, today) {
-  const state = await loadFilmState();
-  if (state.lastRefillDate === today) return state;
-  const updated = { ...state, balance: state.balance + amount, lastRefillDate: today };
-  await saveFilmState(updated);
-  return updated;
+export function claimDailyRefill(amount, today) {
+  return withLock(async () => {
+    const state = await loadFilmState();
+    if (state.lastRefillDate === today) return state;
+    const updated = { ...state, balance: state.balance + amount, lastRefillDate: today };
+    await saveFilmState(updated);
+    return updated;
+  });
 }
 
 // Grants `amountPerTrophy` for each key in unlockedTrophyKeys not already
@@ -70,38 +84,42 @@ export async function claimDailyRefill(amount, today) {
 // unlocked trophies every time — already-claimed ones are filtered out
 // here, so this is idempotent and safe to call repeatedly as trophy state
 // is recomputed.
-export async function claimTrophyRewards(amountPerTrophy, unlockedTrophyKeys) {
-  const state = await loadFilmState();
-  const newKeys = unlockedTrophyKeys.filter((key) => !state.claimedTrophyKeys.includes(key));
-  if (newKeys.length === 0) return { state, newlyClaimed: [] };
+export function claimTrophyRewards(amountPerTrophy, unlockedTrophyKeys) {
+  return withLock(async () => {
+    const state = await loadFilmState();
+    const newKeys = unlockedTrophyKeys.filter((key) => !state.claimedTrophyKeys.includes(key));
+    if (newKeys.length === 0) return { state, newlyClaimed: [] };
 
-  const updated = {
-    ...state,
-    balance: state.balance + amountPerTrophy * newKeys.length,
-    claimedTrophyKeys: [...state.claimedTrophyKeys, ...newKeys],
-  };
-  await saveFilmState(updated);
-  return { state: updated, newlyClaimed: newKeys };
+    const updated = {
+      ...state,
+      balance: state.balance + amountPerTrophy * newKeys.length,
+      claimedTrophyKeys: [...state.claimedTrophyKeys, ...newKeys],
+    };
+    await saveFilmState(updated);
+    return { state: updated, newlyClaimed: newKeys };
+  });
 }
 
 // Grants a rewarded-ad bonus, up to dailyCap watches per calendar day.
 // Returns { state, granted } — granted is false once the cap's hit for
 // `today`, so the UI can disable the watch-ad option without a separate
 // "how many have I watched" query.
-export async function grantAdReward(amount, dailyCap, today) {
-  const state = await loadFilmState();
-  const watchedToday = state.adsWatchedDate === today ? state.adsWatchedToday : 0;
+export function grantAdReward(amount, dailyCap, today) {
+  return withLock(async () => {
+    const state = await loadFilmState();
+    const watchedToday = state.adsWatchedDate === today ? state.adsWatchedToday : 0;
 
-  if (watchedToday >= dailyCap) {
-    return { state, granted: false };
-  }
+    if (watchedToday >= dailyCap) {
+      return { state, granted: false };
+    }
 
-  const updated = {
-    ...state,
-    balance: state.balance + amount,
-    adsWatchedToday: watchedToday + 1,
-    adsWatchedDate: today,
-  };
-  await saveFilmState(updated);
-  return { state: updated, granted: true };
+    const updated = {
+      ...state,
+      balance: state.balance + amount,
+      adsWatchedToday: watchedToday + 1,
+      adsWatchedDate: today,
+    };
+    await saveFilmState(updated);
+    return { state: updated, granted: true };
+  });
 }

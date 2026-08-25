@@ -1,4 +1,4 @@
-import { groupSpecies, makeTrophy } from './useTrophyCategories';
+import { groupSpecies, makeTrophy, forceUnlocked } from './useTrophyCategories';
 import { SPECIES } from '../domain/species';
 
 describe('groupSpecies', () => {
@@ -61,5 +61,33 @@ describe('makeTrophy', () => {
     const trophy = makeTrophy('Empty', [], new Set());
     expect(trophy.total).toBe(0);
     expect(trophy.unlocked).toBe(false);
+  });
+});
+
+// DEBUG_UNLOCK_EVERYTHING (config.js) support — see useTrophyCategories.js.
+describe('forceUnlocked', () => {
+  it('unlocks a species trophy and fills in every species as caught', () => {
+    const species = SPECIES.slice(0, 3);
+    const trophy = makeTrophy('Test', species, new Set());
+
+    const forced = forceUnlocked(trophy);
+
+    expect(forced.unlocked).toBe(true);
+    expect(forced.caughtCount).toBe(3);
+    expect(species.every((s) => forced.caughtSpeciesIds.has(s.id))).toBe(true);
+  });
+
+  it('never unlocks an empty species group, even when forced', () => {
+    const trophy = makeTrophy('Empty', [], new Set());
+    expect(forceUnlocked(trophy).unlocked).toBe(false);
+  });
+
+  it('unlocks a behavior trophy and maxes out its progress counter', () => {
+    const trophy = { type: 'behavior', label: 'Test', current: 2, target: 10, unlocked: false };
+
+    const forced = forceUnlocked(trophy);
+
+    expect(forced.unlocked).toBe(true);
+    expect(forced.current).toBe(forced.target);
   });
 });

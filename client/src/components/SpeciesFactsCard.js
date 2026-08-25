@@ -1,18 +1,20 @@
 import React from 'react';
 import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSelector } from 'react-redux';
 import styles from '../styles';
 import { useGetSpeciesInfoQuery } from '../services/birdInfoApi';
 import useSpeciesRarity from '../hooks/useSpeciesRarity';
 import RarityMeter from './RarityMeter';
 import MigrationMap from './MigrationMap';
-import { BIRD_PROFILES, MIGRATION_ROUTES } from '../domain/birdProfiles';
+import { BIRD_PROFILES, MIGRATION_ROUTES, DEEP_DIVE } from '../domain/birdProfiles';
 
 export default function SpeciesFactsCard({ speciesId, speciesName }) {
   const { data: info, isLoading, isError, refetch } = useGetSpeciesInfoQuery(speciesId, {
     skip: !speciesId,
   });
   const rarity = useSpeciesRarity(speciesId);
+  const deepDiveLoreUnlocked = useSelector((state) => state.rewards.deepDiveLoreUnlocked);
 
   if (!speciesName) return null;
 
@@ -46,6 +48,7 @@ export default function SpeciesFactsCard({ speciesId, speciesName }) {
 
   const profile = BIRD_PROFILES[speciesId];
   const migrationRoute = MIGRATION_ROUTES[speciesId];
+  const deepDive = DEEP_DIVE[speciesId];
 
   return (
     <View style={styles.factsCard}>
@@ -115,6 +118,16 @@ export default function SpeciesFactsCard({ speciesId, speciesName }) {
           <Text style={styles.migrationResidentText}>Resident in the UK all year round. Doesn't migrate.</Text>
         )}
       </View>
+
+      {deepDiveLoreUnlocked && deepDive && (
+        <View style={styles.deepDiveBox}>
+          <View style={styles.deepDiveLabelRow}>
+            <MaterialCommunityIcons name="book-open-page-variant" size={13} color={styles.PALETTE.primary} />
+            <Text style={styles.deepDiveLabel}>Deep dive</Text>
+          </View>
+          <Text style={styles.deepDiveText}>{deepDive}</Text>
+        </View>
+      )}
     </View>
   );
 }

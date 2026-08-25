@@ -24,3 +24,12 @@ export const LOW_CONFIDENCE_THRESHOLD = 90;
 // Minimum time the loading screen stays up, even if the server responds
 // faster — avoids a jarring flash on quick responses.
 export const MIN_LOADING_DURATION_MS = 5000;
+
+// Dev-only escape hatch: when true, every trophy/milestone shows as already
+// unlocked (see useTrophyCategories.js) and the one-time unlock is treated
+// as owned (see premiumSlice.js) — lets you see the "everything unlocked"
+// state (frames, deep-dive lore, unlimited Film, etc.) without actually
+// grinding for it. Trophy unlocks cascade into their rewards through the
+// normal claim effects in App.js, so nothing else needs to know about this
+// flag. Must be false in any real build.
+export const DEBUG_UNLOCK_EVERYTHING = true;

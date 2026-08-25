@@ -1,7 +1,9 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { loadPremiumState, setUnlockedForever as setUnlockedForeverInStorage } from '../services/premiumStorage';
+import { DEBUG_UNLOCK_EVERYTHING } from '../config';
 
 export const hydratePremium = createAsyncThunk('premium/hydrate', async () => {
+  if (DEBUG_UNLOCK_EVERYTHING) return { unlockedForever: true };
   return loadPremiumState();
 });
 

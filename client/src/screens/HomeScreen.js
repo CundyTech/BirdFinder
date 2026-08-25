@@ -8,6 +8,8 @@ import { MIN_LOADING_DURATION_MS } from '../config';
 import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
 import { recordSighting } from '../store/lifeListSlice';
 import { spendFilm } from '../store/filmSlice';
+import { recordActivity } from '../store/streakSlice';
+import { spendReroll } from '../store/rewardsSlice';
 import useTrophyCategories from '../hooks/useTrophyCategories';
 
 import Header from '../components/Header';
@@ -35,6 +37,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
     const dispatch = useDispatch();
     const sightingsCount = useSelector((state) => state.lifeList.sightings.length);
     const filmBalance = useSelector((state) => state.film.balance);
+    const rerollTokens = useSelector((state) => state.rewards.rerollTokens);
     const unlockedForever = useSelector((state) => state.premium.unlockedForever);
     const trophyCategories = useTrophyCategories();
     const allTrophies = trophyCategories.flatMap((c) => c.trophies || []);
@@ -56,12 +59,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
             ? { status: 'healthy', ...healthData }
             : null;
 
-    const pickImage = async () => {
-        if (!unlockedForever && filmBalance <= 0) {
-            setShowOutOfFilm(true);
-            return;
-        }
-
+    const openCamera = async () => {
         const permission = await ImagePicker.requestCameraPermissionsAsync();
         if (permission.status !== 'granted') {
             if (permission.canAskAgain === false) {
@@ -90,6 +88,22 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
         }
     };
 
+    // A reroll token is never spent silently — Film out always shows the
+    // modal first, and using a reroll is a choice made there (see
+    // handleUseReroll), on equal footing with watching an ad or unlocking.
+    const pickImage = async () => {
+        if (!unlockedForever && filmBalance <= 0) {
+            setShowOutOfFilm(true);
+            return;
+        }
+        await openCamera();
+    };
+
+    const handleUseReroll = async () => {
+        setShowOutOfFilm(false);
+        await openCamera();
+    };
+
     const uploadImage = async (uri) => {
         setLoading(true);
         setResult(null);
@@ -108,12 +122,18 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
             });
 
             const json = await uploadPhoto(formData).unwrap();
-            // Only a successful identification costs Film — a failed
+            // Only a successful identification costs anything — a failed
             // request (network/server error) didn't actually use the
             // service, so it shouldn't cost the user anything. Unlocked
-            // players don't touch the Film ledger at all.
+            // players don't touch the Film ledger at all. Film is spent
+            // first; a reroll token only covers the identification when
+            // Film is already at zero (see pickImage's gate above).
             if (!unlockedForever) {
-                dispatch(spendFilm());
+                if (filmBalance > 0) {
+                    dispatch(spendFilm());
+                } else {
+                    dispatch(spendReroll());
+                }
             }
             setResult(json);
         } catch (err) {
@@ -135,6 +155,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
 
     const handleSaveSighting = (speciesId, confidence) => {
         dispatch(recordSighting({ speciesId, confidence, sourceUri: imageUri }));
+        dispatch(recordActivity());
     };
 
     return (
@@ -229,7 +250,12 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                 </View>
             )}
 
-            <OutOfFilmModal visible={showOutOfFilm} onClose={() => setShowOutOfFilm(false)} />
+            <OutOfFilmModal
+                visible={showOutOfFilm}
+                onClose={() => setShowOutOfFilm(false)}
+                rerollTokens={rerollTokens}
+                onUseReroll={handleUseReroll}
+            />
 
         </SafeAreaView>
     );

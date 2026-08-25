@@ -5,7 +5,7 @@ import styles from '../styles';
 import { useFilmRewardedAd } from '../hooks/useFilmRewardedAd';
 import { usePurchases } from '../hooks/usePurchases';
 
-export default function OutOfFilmModal({ visible, onClose }) {
+export default function OutOfFilmModal({ visible, onClose, rerollTokens = 0, onUseReroll }) {
   const { isLoaded: adLoaded, showAd } = useFilmRewardedAd();
   const { product, purchasing, purchaseUnlock } = usePurchases();
 
@@ -17,6 +17,20 @@ export default function OutOfFilmModal({ visible, onClose }) {
           <Text style={styles.filmModalSubtitle}>
             You're out of Film for now. Grab more below, or come back tomorrow for a free refill.
           </Text>
+
+          {rerollTokens > 0 && (
+            <TouchableOpacity style={styles.filmModalOption} onPress={onUseReroll} activeOpacity={0.85}>
+              <View style={[styles.filmModalOptionIcon, { backgroundColor: 'rgba(31, 157, 107, 0.16)' }]}>
+                <MaterialCommunityIcons name="dice-multiple-outline" size={22} color={styles.PALETTE.primary} />
+              </View>
+              <View style={styles.filmModalOptionText}>
+                <Text style={styles.filmModalOptionTitle}>Use a free reroll</Text>
+                <Text style={styles.filmModalOptionSub}>
+                  {rerollTokens} reroll token{rerollTokens === 1 ? '' : 's'} available, earned from milestones
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
 
           <TouchableOpacity
             style={[styles.filmModalOption, !adLoaded && styles.filmModalOptionDisabled]}

@@ -55,6 +55,41 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
+  logoMarkFrame: {
+    padding: 3,
+    borderRadius: 16,
+    borderWidth: 3,
+    borderColor: 'transparent',
+    backgroundColor: 'transparent',
+    position: 'relative',
+  },
+  logoMarkBadge: {
+    position: 'absolute',
+    right: -4,
+    bottom: -4,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: PALETTE.bg,
+  },
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(244, 67, 54, 0.14)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 4,
+    marginRight: 8,
+  },
+  streakBadgeText: {
+    color: PALETTE.danger,
+    fontSize: 13,
+    fontWeight: '700',
+  },
   brandTextWrap: {
     flex: 1,
     marginLeft: 12,
@@ -830,6 +865,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  trophyIconWrap: {
+    marginRight: 12,
+    position: 'relative',
+  },
   trophyIconCircle: {
     width: 48,
     height: 48,
@@ -837,10 +876,25 @@ const styles = StyleSheet.create({
     backgroundColor: PALETTE.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 12,
   },
   trophyIconCircleUnlocked: {
     backgroundColor: 'rgba(245, 158, 11, 0.18)',
+  },
+  // Shows what a milestone trophy actually grants (frame/reroll/etc),
+  // right on the trophy icon — the reward otherwise only shows up
+  // elsewhere in the app (e.g. a cosmetic frame around the header logo),
+  // easy to miss without a pointer back to where it was earned.
+  trophyRewardBadge: {
+    position: 'absolute',
+    right: -4,
+    bottom: -4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: PALETTE.card,
   },
   trophyHeaderText: {
     flex: 1,
@@ -996,6 +1050,33 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
 
+  // Deep dive lore — unlocked as a milestone reward (rewardsSlice.js), so
+  // styled distinctly (green, not amber) from the always-visible fun fact.
+  deepDiveBox: {
+    backgroundColor: 'rgba(31, 157, 107, 0.12)',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16,
+  },
+  deepDiveLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 4,
+  },
+  deepDiveLabel: {
+    color: PALETTE.primary,
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  deepDiveText: {
+    color: PALETTE.textOnDark,
+    fontSize: 13,
+    lineHeight: 19,
+  },
+
   // Prey / predators (species facts card)
   preyPredatorRow: {
     flexDirection: 'row',
@@ -1123,9 +1204,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Plain (no frame equipped) full-screen photo — the whole image shown
+  // uncropped.
   lightboxImage: {
     width: '92%',
     height: '75%',
+  },
+
+  // Framed full-screen photo — sized in JS (see ImageLightbox.js) to match
+  // the equipped frame's own aspect ratio exactly, so FrameBorder.js's SVG
+  // art isn't stretched or letterboxed.
+  framedPhotoBox: {
+    position: 'relative',
+  },
+  framedPhotoImage: {
+    position: 'absolute',
+  },
+  frameBorderFill: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   lightboxCloseButton: {
     position: 'absolute',

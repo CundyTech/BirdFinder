@@ -5,6 +5,8 @@ import { store } from './src/store';
 import { hydrateLifeList } from './src/store/lifeListSlice';
 import { hydrateFilm, claimDailyRefill, claimTrophyRewards } from './src/store/filmSlice';
 import { hydratePremium } from './src/store/premiumSlice';
+import { hydrateStreak } from './src/store/streakSlice';
+import { hydrateRewards, grantMilestoneRewards } from './src/store/rewardsSlice';
 import useTrophyCategories from './src/hooks/useTrophyCategories';
 import styles from './src/styles';
 import HomeScreen from './src/screens/HomeScreen';
@@ -22,12 +24,15 @@ function RootNavigator() {
   const [stack, setStack] = useState([{ name: 'home' }]);
   const screen = stack[stack.length - 1];
   const filmHydrated = useSelector((state) => state.film.hydrated);
+  const rewardsHydrated = useSelector((state) => state.rewards.hydrated);
   const trophyCategories = useTrophyCategories();
 
   useEffect(() => {
     dispatch(hydrateLifeList());
     dispatch(hydrateFilm());
     dispatch(hydratePremium());
+    dispatch(hydrateStreak());
+    dispatch(hydrateRewards());
   }, [dispatch]);
 
   // Daily free Film — safe to dispatch on every launch, the storage layer
@@ -39,16 +44,31 @@ function RootNavigator() {
   // Trophy payouts — recomputed (and re-dispatched) whenever trophy state
   // changes; already-claimed trophies are filtered out in the storage
   // layer, so passing the full unlocked list every time is intentional,
-  // not a bug.
+  // not a bug. Milestones (category id 'milestones') are excluded here —
+  // they grant a different, non-Film reward via a separate effect below.
   useEffect(() => {
     if (!filmHydrated) return;
-    const unlockedKeys = trophyCategories.flatMap((category) =>
-      (category.trophies || [])
-        .filter((trophy) => trophy.unlocked)
-        .map((trophy) => `${category.id}:${trophy.label}`)
-    );
+    const unlockedKeys = trophyCategories
+      .filter((category) => category.id !== 'milestones')
+      .flatMap((category) =>
+        (category.trophies || [])
+          .filter((trophy) => trophy.unlocked)
+          .map((trophy) => `${category.id}:${trophy.label}`)
+      );
     if (unlockedKeys.length > 0) dispatch(claimTrophyRewards(unlockedKeys));
   }, [filmHydrated, trophyCategories, dispatch]);
+
+  // Milestone payouts — same idempotent-by-diffing pattern as the Film
+  // claim above, but each milestone carries its own reward spec (reroll
+  // token, cosmetic frame, etc.) instead of a uniform Film amount.
+  useEffect(() => {
+    if (!rewardsHydrated) return;
+    const milestonesCategory = trophyCategories.find((category) => category.id === 'milestones');
+    const unlockedMilestones = (milestonesCategory?.trophies || [])
+      .filter((trophy) => trophy.unlocked)
+      .map((trophy) => ({ key: `milestones:${trophy.label}`, reward: trophy.reward }));
+    if (unlockedMilestones.length > 0) dispatch(grantMilestoneRewards(unlockedMilestones));
+  }, [rewardsHydrated, trophyCategories, dispatch]);
 
   const push = (next) => setStack((s) => [...s, next]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
