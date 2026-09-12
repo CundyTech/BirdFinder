@@ -32,4 +32,4 @@ export const MIN_LOADING_DURATION_MS = 5000;
 // grinding for it. Trophy unlocks cascade into their rewards through the
 // normal claim effects in App.js, so nothing else needs to know about this
 // flag. Must be false in any real build.
-export const DEBUG_UNLOCK_EVERYTHING = true;
+export const DEBUG_UNLOCK_EVERYTHING = false;

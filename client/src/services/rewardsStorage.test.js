@@ -120,6 +120,23 @@ describe('rewardsStorage', () => {
       expect(newlyClaimed).toEqual([]);
     });
 
+    it('backfills a frame whose milestone was already claimed but never made it into ownedFrameIds', async () => {
+      await AsyncStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          ...defaultState(),
+          claimedMilestoneKeys: ['milestones:Frequent Flyer'],
+        })
+      );
+      const { state, newlyClaimed } = await grantMilestoneRewards([
+        { key: 'milestones:Frequent Flyer', reward: { type: 'frame', frameId: 'floral-frame' } },
+      ]);
+      expect(state.ownedFrameIds).toEqual(['floral-frame']);
+      expect(state.equippedFrameId).toBe('floral-frame');
+      // The milestone was already claimed — this is a backfill, not a fresh claim.
+      expect(newlyClaimed).toEqual([]);
+    });
+
     it('grants only the newly-unlocked milestones when mixed with already-claimed ones', async () => {
       await grantMilestoneRewards([{ key: 'm1', reward: { type: 'reroll', amount: 1 } }]);
       const { state, newlyClaimed } = await grantMilestoneRewards([

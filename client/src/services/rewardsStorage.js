@@ -90,16 +90,32 @@ export function equipFrame(frameId) {
 // already been claimed. Callers can pass every currently-unlocked milestone
 // every time — already-claimed ones are filtered out here, matching
 // filmStorage.claimTrophyRewards' idempotent-by-diffing pattern.
+//
+// Also reconciles milestones already marked claimed whose frame never made
+// it into ownedFrameIds — a claim recorded without its reward landing
+// otherwise sticks forever, since a claimed key is never revisited.
 export function grantMilestoneRewards(milestones) {
   return withLock(async () => {
     const state = await loadRewardsState();
     const newOnes = milestones.filter((m) => !state.claimedMilestoneKeys.includes(m.key));
-    if (newOnes.length === 0) return { state, newlyClaimed: [] };
+    const missingFrameIds = milestones
+      .filter(
+        (m) =>
+          state.claimedMilestoneKeys.includes(m.key) &&
+          m.reward.type === 'frame' &&
+          !state.ownedFrameIds.includes(m.reward.frameId)
+      )
+      .map((m) => m.reward.frameId);
+    if (newOnes.length === 0 && missingFrameIds.length === 0) return { state, newlyClaimed: [] };
 
     const updated = {
       ...state,
       claimedMilestoneKeys: [...state.claimedMilestoneKeys, ...newOnes.map((m) => m.key)],
+      ownedFrameIds: [...state.ownedFrameIds, ...missingFrameIds],
     };
+    if (!updated.equippedFrameId && missingFrameIds.length > 0) {
+      updated.equippedFrameId = missingFrameIds[0];
+    }
 
     for (const { reward } of newOnes) {
       if (reward.type === 'reroll') {
