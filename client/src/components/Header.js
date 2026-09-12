@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import styles from '../styles';
 import { getFrame } from '../domain/frames';
-import FramePickerModal from './FramePickerModal';
+import PerksModal from './PerksModal';
 
 export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
   const isHealthy = apiHealth?.status === 'healthy';
@@ -12,9 +12,8 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
   const filmBalance = useSelector((state) => state.film.balance);
   const unlockedForever = useSelector((state) => state.premium.unlockedForever);
   const currentStreak = useSelector((state) => state.streak.currentStreak);
-  const ownedFrameIds = useSelector((state) => state.rewards.ownedFrameIds);
   const equippedFrameId = useSelector((state) => state.rewards.equippedFrameId);
-  const [showFramePicker, setShowFramePicker] = useState(false);
+  const [showPerks, setShowPerks] = useState(false);
 
   const equippedFrame = getFrame(equippedFrameId);
 
@@ -22,11 +21,10 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
     <View style={styles.header}>
       <View style={styles.brandRow}>
         <TouchableOpacity
-          onPress={() => setShowFramePicker(true)}
-          disabled={ownedFrameIds.length === 0}
+          onPress={() => setShowPerks(true)}
           activeOpacity={0.8}
           accessibilityRole="button"
-          accessibilityLabel={equippedFrame ? `${equippedFrame.label} frame, tap to change` : 'App icon'}
+          accessibilityLabel={equippedFrame ? `${equippedFrame.label} frame, tap to view perks` : 'View perks'}
         >
           <View
             style={[
@@ -67,7 +65,7 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
         )}
       </View>
 
-      <FramePickerModal visible={showFramePicker} onClose={() => setShowFramePicker(false)} />
+      <PerksModal visible={showPerks} onClose={() => setShowPerks(false)} />
 
       {healthLoading && (
         <View style={styles.healthBanner}>

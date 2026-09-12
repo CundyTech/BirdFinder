@@ -11,28 +11,37 @@ export default function FramePickerModal({ visible, onClose }) {
   const ownedFrameIds = useSelector((state) => state.rewards.ownedFrameIds);
   const equippedFrameId = useSelector((state) => state.rewards.equippedFrameId);
 
-  const ownedFrames = FRAMES.filter((f) => ownedFrameIds.includes(f.id));
-
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.filmModalBackdrop}>
         <View style={styles.filmModalCard}>
-          <Text style={styles.filmModalTitle}>Your Frames</Text>
+          <Text style={styles.filmModalTitle}>Frames</Text>
           <Text style={styles.filmModalSubtitle}>
             Earned from milestones. Pick one to frame your photos when viewing them full-screen.
           </Text>
 
-          {ownedFrames.map((frame) => {
+          {FRAMES.map((frame) => {
+            const owned = ownedFrameIds.includes(frame.id);
             const selected = frame.id === equippedFrameId;
             return (
               <TouchableOpacity
                 key={frame.id}
-                style={styles.filmModalOption}
-                onPress={() => dispatch(equipFrame(frame.id))}
-                activeOpacity={0.85}
+                style={[styles.filmModalOption, !owned && styles.filmModalOptionDisabled]}
+                onPress={() => owned && dispatch(equipFrame(frame.id))}
+                disabled={!owned}
+                activeOpacity={owned ? 0.85 : 1}
               >
-                <View style={[styles.filmModalOptionIcon, { backgroundColor: `${frame.ringColor}29` }]}>
-                  <MaterialCommunityIcons name={frame.icon} size={22} color={frame.ringColor} />
+                <View
+                  style={[
+                    styles.filmModalOptionIcon,
+                    { backgroundColor: owned ? `${frame.ringColor}29` : styles.PALETTE.surface },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={owned ? frame.icon : 'lock'}
+                    size={22}
+                    color={owned ? frame.ringColor : styles.PALETTE.mutedText}
+                  />
                 </View>
                 <View style={styles.filmModalOptionText}>
                   <Text style={styles.filmModalOptionTitle}>{frame.label}</Text>

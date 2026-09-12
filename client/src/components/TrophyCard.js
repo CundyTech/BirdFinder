@@ -2,30 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import styles from '../styles';
-import { getFrame } from '../domain/frames';
-
-// Milestone trophies (see achievements.js) carry a `reward` spec describing
-// what they actually grant. This maps that to a small icon/colour shown
-// right on the trophy — the reward itself often lives somewhere less
-// obvious (a cosmetic frame only shows on the Home header, for instance),
-// so this is the one place every reward is visible regardless of type.
-function rewardDisplay(reward) {
-  if (!reward) return null;
-  if (reward.type === 'reroll') {
-    return { icon: 'dice-multiple-outline', color: styles.PALETTE.primary };
-  }
-  if (reward.type === 'streakProtection') {
-    return { icon: 'shield-check-outline', color: styles.PALETTE.primary };
-  }
-  if (reward.type === 'frame') {
-    const frame = getFrame(reward.frameId);
-    return { icon: frame?.icon || 'star-four-points', color: frame?.ringColor || styles.PALETTE.accent };
-  }
-  if (reward.type === 'deepDiveLore') {
-    return { icon: 'book-open-page-variant', color: styles.PALETTE.primary };
-  }
-  return null;
-}
+import { rewardDisplay } from '../domain/rewardDisplay';
 
 function SpeciesTrophyBody({ trophy, onOpenSpecies }) {
   const { species, caughtSpeciesIds } = trophy;
