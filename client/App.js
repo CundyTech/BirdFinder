@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { StatusBar } from 'react-native';
+import { StatusBar, BackHandler } from 'react-native';
 import { Provider, useDispatch, useSelector } from 'react-redux';
 import { store } from './src/store';
 import { hydrateLifeList } from './src/store/lifeListSlice';
@@ -72,6 +72,21 @@ function RootNavigator() {
 
   const push = (next) => setStack((s) => [...s, next]);
   const pop = () => setStack((s) => (s.length > 1 ? s.slice(0, -1) : s));
+
+  // Without this, Android's hardware/gesture back button exits the app from
+  // any screen — there's no routing library here to intercept it. Only
+  // handle it (and swallow the default exit) while there's somewhere to go
+  // back to; on the home screen, fall through to the OS default so back
+  // still exits normally.
+  useEffect(() => {
+    const onBackPress = () => {
+      if (stack.length <= 1) return false;
+      pop();
+      return true;
+    };
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [stack]);
 
   let activeScreen;
   if (screen.name === 'lifelist') {
