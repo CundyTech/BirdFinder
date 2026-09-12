@@ -354,6 +354,19 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: 'center',
   },
+  loadingCostBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginTop: 14,
+    gap: 6,
+  },
+  loadingCostBadgeText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   resultCard: {
     backgroundColor: 'transparent',
     padding: 14,

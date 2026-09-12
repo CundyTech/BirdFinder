@@ -19,6 +19,7 @@ import LoadingCard from '../components/LoadingCard';
 import ResultCard from '../components/ResultCard';
 import BirdPatternBackground from '../components/BirdPatternBackground';
 import OutOfFilmModal from '../components/OutOfFilmModal';
+import FilmChoiceModal from '../components/FilmChoiceModal';
 
 // fetchBaseQuery's error shape: { status: <http code> } for a bad response,
 // { status: 'FETCH_ERROR', error: <message> } for a network failure.
@@ -33,6 +34,12 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [showOutOfFilm, setShowOutOfFilm] = useState(false);
+    const [showFilmChoice, setShowFilmChoice] = useState(false);
+    // Set right before openCamera when an ad (from FilmChoiceModal) earns
+    // this identification for free — read once, by uploadImage's success
+    // handler, then cleared in its finally so it never leaks into a later,
+    // unrelated attempt.
+    const [freeViaAd, setFreeViaAd] = useState(false);
 
     const dispatch = useDispatch();
     const sightingsCount = useSelector((state) => state.lifeList.sightings.length);
@@ -43,6 +50,19 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
     const allTrophies = trophyCategories.flatMap((c) => c.trophies || []);
     const unlockedTrophyCount = allTrophies.filter((t) => t.unlocked).length;
     const totalTrophyCount = allTrophies.length;
+
+    // What this identification will actually cost — mirrors the spend
+    // decision in uploadImage's success handler below (an ad-earned free
+    // pass first, then Film, then a reroll token only once Film is at
+    // zero) so the loading screen never shows a different answer than what
+    // actually gets charged.
+    const spendKind = unlockedForever
+        ? 'unlimited'
+        : freeViaAd
+            ? 'free-ad'
+            : filmBalance > 0
+                ? 'film'
+                : 'reroll';
 
     useEffect(() => {
         if (showOutOfFilm && (unlockedForever || filmBalance > 0)) {
@@ -88,19 +108,45 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
         }
     };
 
-    // A reroll token is never spent silently — Film out always shows the
-    // modal first, and using a reroll is a choice made there (see
-    // handleUseReroll), on equal footing with watching an ad or unlocking.
+    // Nothing is ever spent silently — unlocked-forever players go
+    // straight to the camera, everyone else always sees a choice first:
+    // FilmChoiceModal (Film vs. an ad) while Film is available, or
+    // OutOfFilmModal (reroll/ad/unlock) once it's at zero.
+    //
+    // freeViaAd resets here, at the one entry point for starting a new
+    // attempt, rather than only after a successful upload — otherwise a
+    // free pass earned but never used (e.g. the camera got cancelled
+    // before a photo was taken) would silently carry over and cover a
+    // later attempt the user explicitly chose to pay Film or a reroll for.
     const pickImage = async () => {
-        if (!unlockedForever && filmBalance <= 0) {
+        setFreeViaAd(false);
+        if (unlockedForever) {
+            await openCamera();
+            return;
+        }
+        if (filmBalance <= 0) {
             setShowOutOfFilm(true);
             return;
         }
-        await openCamera();
+        setShowFilmChoice(true);
     };
 
     const handleUseReroll = async () => {
         setShowOutOfFilm(false);
+        await openCamera();
+    };
+
+    const handleUseFilm = async () => {
+        setShowFilmChoice(false);
+        await openCamera();
+    };
+
+    // FilmChoiceModal's own onClose already ran before showAd() fired, so
+    // by the time the ad is actually watched and this callback fires, the
+    // modal is already gone — just record the free pass and go straight to
+    // the camera, same as choosing "Use 1 Film" would have.
+    const handleAdEarnedFreeId = async () => {
+        setFreeViaAd(true);
         await openCamera();
     };
 
@@ -124,17 +170,10 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
             const json = await uploadPhoto(formData).unwrap();
             // Only a successful identification costs anything — a failed
             // request (network/server error) didn't actually use the
-            // service, so it shouldn't cost the user anything. Unlocked
-            // players don't touch the Film ledger at all. Film is spent
-            // first; a reroll token only covers the identification when
-            // Film is already at zero (see pickImage's gate above).
-            if (!unlockedForever) {
-                if (filmBalance > 0) {
-                    dispatch(spendFilm());
-                } else {
-                    dispatch(spendReroll());
-                }
-            }
+            // service, so it shouldn't cost the user anything. 'unlimited'
+            // and 'free-ad' cost nothing either way.
+            if (spendKind === 'film') dispatch(spendFilm());
+            else if (spendKind === 'reroll') dispatch(spendReroll());
             setResult(json);
         } catch (err) {
             setError(describeQueryError(err, 'Server error'));
@@ -144,6 +183,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                 await new Promise((resolve) => setTimeout(resolve, remaining));
             }
             setLoading(false);
+            setFreeViaAd(false);
         }
     };
 
@@ -234,7 +274,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                 )}
 
                 {/* Loading state */}
-                {loading && <LoadingCard />}
+                {loading && <LoadingCard spendKind={spendKind} />}
 
             </ScrollView>
 
@@ -255,6 +295,14 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                 onClose={() => setShowOutOfFilm(false)}
                 rerollTokens={rerollTokens}
                 onUseReroll={handleUseReroll}
+            />
+
+            <FilmChoiceModal
+                visible={showFilmChoice}
+                onClose={() => setShowFilmChoice(false)}
+                filmBalance={filmBalance}
+                onUseFilm={handleUseFilm}
+                onAdEarned={handleAdEarnedFreeId}
             />
 
         </SafeAreaView>
