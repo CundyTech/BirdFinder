@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, ScrollView, Alert, DevSettings } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles';
 import useTrophyCategories from '../hooks/useTrophyCategories';
 import { FRAMES } from '../domain/frames';
 import { rewardDisplay, rewardName, rewardActionText } from '../domain/rewardDisplay';
+import { grantMilestoneRewards } from '../store/rewardsSlice';
 import FramePickerModal from './FramePickerModal';
 
 // Every milestone trophy (achievements.js) grants a perk other than Film,
@@ -22,6 +24,7 @@ import FramePickerModal from './FramePickerModal';
 // every frame, locked ones greyed) is more useful than five near-identical
 // "tap to choose which frame to wear" entries.
 export default function PerksModal({ visible, onClose }) {
+  const dispatch = useDispatch();
   const [showFramePicker, setShowFramePicker] = useState(false);
   const categories = useTrophyCategories();
   const claimedKeys = useSelector((state) => state.rewards.claimedMilestoneKeys);
@@ -37,6 +40,33 @@ export default function PerksModal({ visible, onClose }) {
   const close = () => {
     setShowFramePicker(false);
     onClose();
+  };
+
+  // Dev-only shortcuts for testing the reward flow without actually
+  // grinding for it. milestones already carries every milestone's static
+  // {label, reward} regardless of live progress, so no separate lookup is
+  // needed to grant them all.
+  const handleUnlockAllPerks = () => {
+    const allMilestones = milestones.map((t) => ({ key: `milestones:${t.label}`, reward: t.reward }));
+    dispatch(grantMilestoneRewards(allMilestones));
+  };
+
+  const handleWipeAllData = () => {
+    Alert.alert(
+      'Wipe all data?',
+      'Clears every saved sighting, streak, Film balance, and perk. This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Wipe',
+          style: 'destructive',
+          onPress: async () => {
+            await AsyncStorage.clear();
+            DevSettings.reload();
+          },
+        },
+      ]
+    );
   };
 
   return (
@@ -106,6 +136,30 @@ export default function PerksModal({ visible, onClose }) {
                   </View>
                 );
               })}
+
+              {__DEV__ && (
+                <View>
+                  <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Debug (this build only)</Text>
+                  <TouchableOpacity style={styles.filmModalOption} onPress={handleUnlockAllPerks} activeOpacity={0.85}>
+                    <View style={[styles.filmModalOptionIcon, { backgroundColor: 'rgba(245, 158, 11, 0.16)' }]}>
+                      <MaterialCommunityIcons name="star-shooting-outline" size={22} color={styles.PALETTE.accent} />
+                    </View>
+                    <View style={styles.filmModalOptionText}>
+                      <Text style={styles.filmModalOptionTitle}>Unlock All Perks</Text>
+                      <Text style={styles.filmModalOptionSub}>Grants every milestone reward immediately</Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.filmModalOption} onPress={handleWipeAllData} activeOpacity={0.85}>
+                    <View style={[styles.filmModalOptionIcon, { backgroundColor: 'rgba(244, 67, 54, 0.16)' }]}>
+                      <MaterialCommunityIcons name="delete-outline" size={22} color={styles.PALETTE.danger} />
+                    </View>
+                    <View style={styles.filmModalOptionText}>
+                      <Text style={styles.filmModalOptionTitle}>Wipe All Data</Text>
+                      <Text style={styles.filmModalOptionSub}>Clears sightings, streaks, Film, and perks — reloads the app</Text>
+                    </View>
+                  </TouchableOpacity>
+                </View>
+              )}
             </ScrollView>
 
             <TouchableOpacity style={styles.filmModalClose} onPress={close}>
