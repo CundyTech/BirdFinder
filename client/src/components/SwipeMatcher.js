@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { View, Text, Image, Animated, PanResponder, Dimensions, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { useGetSpeciesInfoQuery } from '../services/birdInfoApi';
 import { formatSpeciesName } from '../domain/species';
 
@@ -15,6 +15,7 @@ const FLING_DURATION_MS = 220;
 // fetches independently (RTK Query dedupes/caches per speciesId same as
 // everywhere else in the app).
 function CandidateReferenceImage({ candidateId }) {
+  const styles = useAppStyles();
   const { data: info, isLoading } = useGetSpeciesInfoQuery(candidateId, { skip: !candidateId });
   if (isLoading || !info?.photoUrl) {
     return (
@@ -34,6 +35,7 @@ function CandidateReferenceImage({ candidateId }) {
 // shown — confirming a match is a separate explicit button tap.
 export default function SwipeMatcher({ uri, candidates, onMatch }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const [index, setIndex] = useState(0);
   const pan = useRef(new Animated.ValueXY()).current;
 

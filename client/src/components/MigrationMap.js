@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 
 // Deliberately schematic, not a real projected map — just a curved path
 // between two labeled points. Keeps this on react-native-svg (already a
@@ -10,6 +10,7 @@ import styles from '../styles';
 // dev client and break Expo Go.
 export default function MigrationMap({ breeding, wintering }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   return (
     <View style={styles.migrationMapCard}>
       <Svg width="100%" height={90} viewBox="0 0 300 90">

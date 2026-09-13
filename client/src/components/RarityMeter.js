@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { RARITY_MAX_PIPS } from '../domain/rarity';
 
 // Shared between the full species facts card and the compact life-list
@@ -9,6 +9,7 @@ import { RARITY_MAX_PIPS } from '../domain/rarity';
 // (tile space is a fraction of the card's).
 export default function RarityMeter({ rarity, compact }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   if (!rarity) return null;
 
   return (

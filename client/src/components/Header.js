@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { getFrame } from '../domain/frames';
 import PerksModal from './PerksModal';
 
-export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
+export default function Header({ apiHealth, healthLoading, onRetryHealth, onOpenSettings }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const isHealthy = apiHealth?.status === 'healthy';
   const isUnhealthy = apiHealth?.status === 'unhealthy';
   const filmBalance = useSelector((state) => state.film.balance);
@@ -69,6 +70,15 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
         {!healthLoading && apiHealth && (
           <View style={[styles.statusIndicator, isHealthy ? styles.statusHealthy : styles.statusUnhealthy]} />
         )}
+        <TouchableOpacity
+          onPress={onOpenSettings}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('components.header.openSettings')}
+          style={styles.settingsButton}
+        >
+          <Feather name="settings" size={20} color={styles.PALETTE.mutedText} />
+        </TouchableOpacity>
       </View>
 
       <PerksModal visible={showPerks} onClose={() => setShowPerks(false)} />

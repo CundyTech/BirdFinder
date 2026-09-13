@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import ImageLightbox from './ImageLightbox';
 
 export default function ImageCard({ uri }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const [viewerOpen, setViewerOpen] = useState(false);
   const { width, height } = useWindowDimensions();
   const isPortrait = height >= width;

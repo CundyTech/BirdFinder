@@ -2,10 +2,11 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { rewardDisplay } from '../domain/rewardDisplay';
 
 function SpeciesTrophyBody({ trophy, onOpenSpecies }) {
+  const styles = useAppStyles();
   const { species, caughtSpeciesIds } = trophy;
   return (
     <View style={styles.trophySpeciesGrid}>
@@ -36,6 +37,7 @@ function SpeciesTrophyBody({ trophy, onOpenSpecies }) {
 
 function BehaviorTrophyBody({ trophy, onOpenSpecies }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   if (!trophy.qualifyingSightings || trophy.qualifyingSightings.length === 0) {
     return <Text style={styles.trophyCategoryDescription}>{trophy.description}</Text>;
   }
@@ -60,6 +62,7 @@ function BehaviorTrophyBody({ trophy, onOpenSpecies }) {
 
 export default function TrophyCard({ trophy, expanded, onToggleExpand, onOpenSpecies }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const { type, label, unlocked } = trophy;
   const isBehavior = type === 'behavior';
 

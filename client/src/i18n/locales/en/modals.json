@@ -29,14 +29,6 @@
     "subtitle": "What you've earned from milestones.",
     "framesTitle": "Frames",
     "framesSub": "{{owned}} of {{total}} unlocked — tap to choose which one to wear",
-    "framesAccessibilityLabel": "Frames, {{owned}} of {{total}} unlocked",
-    "debugSectionLabel": "Debug (this build only)",
-    "unlockAllPerksTitle": "Unlock All Perks",
-    "unlockAllPerksSub": "Grants every milestone reward immediately",
-    "wipeAllDataTitle": "Wipe All Data",
-    "wipeAllDataSub": "Clears sightings, streaks, Film, and perks — reloads the app",
-    "wipeConfirmTitle": "Wipe all data?",
-    "wipeConfirmMessage": "Clears every saved sighting, streak, Film balance, and perk. This cannot be undone.",
-    "wipe": "Wipe"
+    "framesAccessibilityLabel": "Frames, {{owned}} of {{total}} unlocked"
   }
 }

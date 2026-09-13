@@ -1,12 +1,24 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { Text } from 'react-native';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 import LoadingCard from './LoadingCard';
+import settingsReducer from '../store/settingsSlice';
 
 // The real Icon component reads expo-font's native module state, which
 // isn't set up under Jest and throws on render (see PerksModal.test.js for
 // the same issue) — a plain placeholder sidesteps it.
 jest.mock('@expo/vector-icons', () => ({ MaterialCommunityIcons: 'MaterialCommunityIcons' }));
+
+// useAppStyles (styles.js) reads the theme preference from the settings
+// slice, so any component using it needs a Provider now, even one with
+// nothing else to do with Redux.
+const store = configureStore({ reducer: { settings: settingsReducer } });
+
+function withStore(ui) {
+  return <Provider store={store}>{ui}</Provider>;
+}
 
 function textOf(component) {
   return component.root
@@ -20,7 +32,7 @@ describe('LoadingCard', () => {
     let component;
 
     act(() => {
-      component = renderer.create(<LoadingCard />);
+      component = renderer.create(withStore(<LoadingCard />));
     });
 
     const textContent = textOf(component);
@@ -32,7 +44,7 @@ describe('LoadingCard', () => {
     let component;
 
     act(() => {
-      component = renderer.create(<LoadingCard spendKind="film" />);
+      component = renderer.create(withStore(<LoadingCard spendKind="film" />));
     });
 
     expect(textOf(component)).toContain('Using 1 Film for this ID');
@@ -42,7 +54,7 @@ describe('LoadingCard', () => {
     let component;
 
     act(() => {
-      component = renderer.create(<LoadingCard spendKind="reroll" />);
+      component = renderer.create(withStore(<LoadingCard spendKind="reroll" />));
     });
 
     expect(textOf(component)).toContain('Using 1 reroll token for this ID');
@@ -52,7 +64,7 @@ describe('LoadingCard', () => {
     let component;
 
     act(() => {
-      component = renderer.create(<LoadingCard spendKind="free-ad" />);
+      component = renderer.create(withStore(<LoadingCard spendKind="free-ad" />));
     });
 
     const textContent = textOf(component);
@@ -65,7 +77,7 @@ describe('LoadingCard', () => {
     let component;
 
     act(() => {
-      component = renderer.create(<LoadingCard spendKind="unlimited" />);
+      component = renderer.create(withStore(<LoadingCard spendKind="unlimited" />));
     });
 
     const textContent = textOf(component);

@@ -3,7 +3,7 @@ import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-na
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { useGetSpeciesInfoQuery } from '../services/birdInfoApi';
 import useSpeciesRarity from '../hooks/useSpeciesRarity';
 import RarityMeter from './RarityMeter';
@@ -12,6 +12,7 @@ import { BIRD_PROFILES, MIGRATION_ROUTES, DEEP_DIVE } from '../domain/birdProfil
 
 export default function SpeciesFactsCard({ speciesId, speciesName }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const { data: info, isLoading, isError, refetch } = useGetSpeciesInfoQuery(speciesId, {
     skip: !speciesId,
   });

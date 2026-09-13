@@ -4,7 +4,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { MIN_LOADING_DURATION_MS } from '../config';
 import i18n from '../i18n';
 import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
@@ -30,8 +30,9 @@ function describeQueryError(err, httpPrefix) {
     return err?.error || i18n.t('home.genericError');
 }
 
-export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
+export default function HomeScreen({ onOpenLifeList, onOpenTrophies, onOpenSettings }) {
     const { t } = useTranslation();
+    const styles = useAppStyles();
     const [imageUri, setImageUri] = useState(null);
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -205,7 +206,12 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
         <SafeAreaView style={styles.container}>
             <BirdPatternBackground />
 
-            <Header apiHealth={apiHealth} healthLoading={healthLoading} onRetryHealth={refetchHealth} />
+            <Header
+                apiHealth={apiHealth}
+                healthLoading={healthLoading}
+                onRetryHealth={refetchHealth}
+                onOpenSettings={onOpenSettings}
+            />
 
             <ScrollView
                 contentContainerStyle={styles.scrollContainer}

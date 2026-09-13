@@ -6,6 +6,7 @@ import filmReducer from './filmSlice';
 import premiumReducer from './premiumSlice';
 import streakReducer from './streakSlice';
 import rewardsReducer from './rewardsSlice';
+import settingsReducer from './settingsSlice';
 import { setupListeners } from '@reduxjs/toolkit/query';
 
 export const store = configureStore({
@@ -17,6 +18,7 @@ export const store = configureStore({
     premium: premiumReducer,
     streak: streakReducer,
     rewards: rewardsReducer,
+    settings: settingsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(api.middleware, birdInfoApi.middleware),

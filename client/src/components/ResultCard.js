@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import SpeciesFactsCard from './SpeciesFactsCard';
 import SwipeMatcher from './SwipeMatcher';
 import ImageLightbox from './ImageLightbox';
@@ -11,6 +11,7 @@ import { formatSpeciesName } from '../domain/species';
 
 export default function ResultCard({ uri, result, onSave }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const [viewerOpen, setViewerOpen] = useState(false);
   // null until the user taps/matches a different candidate — falls back
   // to the top prediction so "Save" has a sensible default without

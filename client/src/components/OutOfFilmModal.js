@@ -3,13 +3,14 @@ import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { useFilmRewardedAd } from '../hooks/useFilmRewardedAd';
 import { usePurchases } from '../hooks/usePurchases';
 import { grantAdReward } from '../store/filmSlice';
 
 export default function OutOfFilmModal({ visible, onClose, rerollTokens = 0, onUseReroll }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const dispatch = useDispatch();
   const { isLoaded: adLoaded, showAd } = useFilmRewardedAd(() => dispatch(grantAdReward()));
   const { product, purchasing, purchaseUnlock } = usePurchases();

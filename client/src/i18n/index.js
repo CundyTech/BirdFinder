@@ -7,6 +7,7 @@ import home from './locales/en/home.json';
 import lifeList from './locales/en/lifeList.json';
 import speciesGallery from './locales/en/speciesGallery.json';
 import trophyCabinet from './locales/en/trophyCabinet.json';
+import settings from './locales/en/settings.json';
 import components from './locales/en/components.json';
 import modals from './locales/en/modals.json';
 import rewards from './locales/en/rewards.json';
@@ -35,6 +36,7 @@ const resources = {
       lifeList,
       speciesGallery,
       trophyCabinet,
+      settings,
       components,
       modals,
       rewards,

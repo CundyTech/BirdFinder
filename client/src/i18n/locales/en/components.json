@@ -5,7 +5,8 @@
     "brandTitle": "Bird Finder UK",
     "brandSubtitle": "UK bird identification",
     "checkingConnection": "Checking connection...",
-    "cantReachServer": "Can't reach the server, tap to retry"
+    "cantReachServer": "Can't reach the server, tap to retry",
+    "openSettings": "Open settings"
   },
   "loadingCard": {
     "usingFilm": "Using 1 Film for this ID",

@@ -1,24 +1,27 @@
 import i18n from '../i18n';
-import styles from '../styles';
+import { BRAND } from '../styles';
 import { getFrame } from './frames';
 
 // Maps a milestone trophy's reward spec (see achievements.js) to a small
 // icon/colour — used anywhere a reward needs to be shown without knowing
 // its type up front (TrophyCard's badge, AchievementsModal's row icon).
+// Uses BRAND rather than a themed stylesheet: these colors don't change
+// between light and dark mode, and this is a plain function, not a
+// component, so it has no hook to read the current theme from.
 export function rewardDisplay(reward) {
   if (!reward) return null;
   if (reward.type === 'reroll') {
-    return { icon: 'dice-multiple-outline', color: styles.PALETTE.primary };
+    return { icon: 'dice-multiple-outline', color: BRAND.primary };
   }
   if (reward.type === 'streakProtection') {
-    return { icon: 'shield-check-outline', color: styles.PALETTE.primary };
+    return { icon: 'shield-check-outline', color: BRAND.primary };
   }
   if (reward.type === 'frame') {
     const frame = getFrame(reward.frameId);
-    return { icon: frame?.icon || 'star-four-points', color: frame?.ringColor || styles.PALETTE.accent };
+    return { icon: frame?.icon || 'star-four-points', color: frame?.ringColor || BRAND.accent };
   }
   if (reward.type === 'deepDiveLore') {
-    return { icon: 'book-open-page-variant', color: styles.PALETTE.primary };
+    return { icon: 'book-open-page-variant', color: BRAND.primary };
   }
   return null;
 }

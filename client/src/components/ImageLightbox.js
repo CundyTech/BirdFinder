@@ -3,7 +3,7 @@ import { Modal, TouchableOpacity, View, Image, useWindowDimensions } from 'react
 import { Feather } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { getFrame } from '../domain/frames';
 import FrameBorder from './FrameBorder';
 
@@ -33,6 +33,7 @@ function fitBox(aspectRatio, maxWidth, maxHeight) {
 // border, so it reads as a real photo sitting inside the frame.
 export default function ImageLightbox({ uri, label, onClose }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const equippedFrame = useSelector((state) => getFrame(state.rewards.equippedFrameId));
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 

@@ -3,12 +3,13 @@ import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { FRAMES } from '../domain/frames';
 import { equipFrame } from '../store/rewardsSlice';
 
 export default function FramePickerModal({ visible, onClose }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const dispatch = useDispatch();
   const ownedFrameIds = useSelector((state) => state.rewards.ownedFrameIds);
   const equippedFrameId = useSelector((state) => state.rewards.equippedFrameId);

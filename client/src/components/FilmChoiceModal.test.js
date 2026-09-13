@@ -1,8 +1,11 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import { Text, TouchableOpacity } from 'react-native';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
 import FilmChoiceModal from './FilmChoiceModal';
 import { useFilmRewardedAd } from '../hooks/useFilmRewardedAd';
+import settingsReducer from '../store/settingsSlice';
 
 // The real Icon component reads expo-font's native module state, which
 // isn't set up under Jest and throws on render (see PerksModal.test.js for
@@ -15,11 +18,18 @@ jest.mock('@expo/vector-icons', () => ({ MaterialCommunityIcons: 'MaterialCommun
 // and throws. An explicit factory skips loading the real module entirely.
 jest.mock('../hooks/useFilmRewardedAd', () => ({ useFilmRewardedAd: jest.fn() }));
 
+// useAppStyles (styles.js) reads the theme preference from the settings
+// slice, so the component needs a Provider now, even with nothing else to
+// do with Redux.
+const store = configureStore({ reducer: { settings: settingsReducer } });
+
 function renderModal(props) {
   let tree;
   act(() => {
     tree = renderer.create(
-      <FilmChoiceModal visible onClose={() => {}} filmBalance={3} onUseFilm={() => {}} onAdEarned={() => {}} {...props} />
+      <Provider store={store}>
+        <FilmChoiceModal visible onClose={() => {}} filmBalance={3} onUseFilm={() => {}} onAdEarned={() => {}} {...props} />
+      </Provider>
     );
   });
   return tree.root;

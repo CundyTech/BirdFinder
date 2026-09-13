@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import useTrophyCategories from '../hooks/useTrophyCategories';
 import TrophyCard from '../components/TrophyCard';
 
 export default function TrophyCabinetScreen({ onBack, onOpenSpecies }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const categories = useTrophyCategories();
   const [expandedKey, setExpandedKey] = useState(null);
 

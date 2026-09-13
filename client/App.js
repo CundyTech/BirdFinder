@@ -8,12 +8,15 @@ import { hydrateFilm, claimDailyRefill, claimTrophyRewards } from './src/store/f
 import { hydratePremium } from './src/store/premiumSlice';
 import { hydrateStreak } from './src/store/streakSlice';
 import { hydrateRewards, grantMilestoneRewards } from './src/store/rewardsSlice';
+import { hydrateSettings } from './src/store/settingsSlice';
 import useTrophyCategories from './src/hooks/useTrophyCategories';
-import styles from './src/styles';
+import useAppStyles from './src/hooks/useAppStyles';
+import useResolvedTheme from './src/hooks/useResolvedTheme';
 import HomeScreen from './src/screens/HomeScreen';
 import LifeListScreen from './src/screens/LifeListScreen';
 import SpeciesGalleryScreen from './src/screens/SpeciesGalleryScreen';
 import TrophyCabinetScreen from './src/screens/TrophyCabinetScreen';
+import SettingsScreen from './src/screens/SettingsScreen';
 
 // No routing library — a plain navigation stack of {name, ...params}
 // covers this app's whole (still small) navigation surface. A stack
@@ -22,6 +25,8 @@ import TrophyCabinetScreen from './src/screens/TrophyCabinetScreen';
 // cabinet), so "back" has to return to whichever one you came from.
 function RootNavigator() {
   const dispatch = useDispatch();
+  const styles = useAppStyles();
+  const resolvedTheme = useResolvedTheme();
   const [stack, setStack] = useState([{ name: 'home' }]);
   const screen = stack[stack.length - 1];
   const filmHydrated = useSelector((state) => state.film.hydrated);
@@ -34,6 +39,7 @@ function RootNavigator() {
     dispatch(hydratePremium());
     dispatch(hydrateStreak());
     dispatch(hydrateRewards());
+    dispatch(hydrateSettings());
   }, [dispatch]);
 
   // Daily free Film — safe to dispatch on every launch, the storage layer
@@ -106,11 +112,14 @@ function RootNavigator() {
     );
   } else if (screen.name === 'species') {
     activeScreen = <SpeciesGalleryScreen speciesId={screen.speciesId} onBack={pop} />;
+  } else if (screen.name === 'settings') {
+    activeScreen = <SettingsScreen onBack={pop} />;
   } else {
     activeScreen = (
       <HomeScreen
         onOpenLifeList={() => push({ name: 'lifelist' })}
         onOpenTrophies={() => push({ name: 'trophies' })}
+        onOpenSettings={() => push({ name: 'settings' })}
       />
     );
   }
@@ -121,10 +130,15 @@ function RootNavigator() {
           reverts to the OS default the moment whichever component set it
           unmounts, so setting it per-screen made it flash back to a plain
           white/default bar on every navigation. An opaque backgroundColor
-          matching the app's dark theme (not 'transparent') is needed too —
+          matching the app's current theme (not 'transparent') is needed too —
           transparent just reveals the Android window's default light
-          background behind the status bar icons. */}
-      <StatusBar barStyle="light-content" backgroundColor={styles.PALETTE.bg} />
+          background behind the status bar icons. Icon color follows the
+          resolved theme so they stay legible against that background in
+          both light and dark mode. */}
+      <StatusBar
+        barStyle={resolvedTheme === 'light' ? 'dark-content' : 'light-content'}
+        backgroundColor={styles.PALETTE.bg}
+      />
       {activeScreen}
     </>
   );

@@ -1,13 +1,14 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import useSpeciesRarity from '../hooks/useSpeciesRarity';
 import RarityMeter from './RarityMeter';
 
 // All 60 tiles share the same no-arg rarity query — RTK Query dedupes it
 // into one bulk request/cache entry rather than each tile firing its own.
 export default function SpeciesTile({ species, count, thumbnailUri, onPress }) {
+  const styles = useAppStyles();
   const rarity = useSpeciesRarity(species.id);
 
   return (

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, ActivityIndicator, Text } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 
 // spendKind mirrors HomeScreen's spend decision (an ad-earned free pass
 // first, then Film, then a reroll token only once Film is at zero, nothing
@@ -27,6 +27,7 @@ const COST_BY_KIND = {
 
 export default function LoadingCard({ spendKind = 'film' }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const cost = COST_BY_KIND[spendKind];
 
   return (

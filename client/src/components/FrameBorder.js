@@ -1,12 +1,13 @@
 import React from 'react';
 import { View } from 'react-native';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 
 // Renders the equipped cosmetic frame's hand-drawn SVG art on top of a
 // photo (see domain/frames.js). Must sit inside a same-sized parent whose
 // aspect ratio already matches frame.viewBox — see ImageLightbox.js, which
 // sizes that parent and positions the photo inside the frame's window.
 export default function FrameBorder({ frame }) {
+  const styles = useAppStyles();
   if (!frame) return null;
   const { Svg } = frame;
 

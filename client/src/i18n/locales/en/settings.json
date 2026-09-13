@@ -1,0 +1,20 @@
+{
+  "title": "Settings",
+  "appearance": {
+    "sectionLabel": "Appearance",
+    "system": "System",
+    "systemSub": "Match your device setting",
+    "light": "Light",
+    "dark": "Dark"
+  },
+  "debug": {
+    "sectionLabel": "Debug (this build only)",
+    "unlockAllPerksTitle": "Unlock All Perks",
+    "unlockAllPerksSub": "Grants every milestone reward immediately",
+    "wipeAllDataTitle": "Wipe All Data",
+    "wipeAllDataSub": "Clears sightings, streaks, Film, and perks — reloads the app",
+    "wipeConfirmTitle": "Wipe all data?",
+    "wipeConfirmMessage": "Clears every saved sighting, streak, Film balance, and perk. This cannot be undone.",
+    "wipe": "Wipe"
+  }
+}

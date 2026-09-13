@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { useFilmRewardedAd } from '../hooks/useFilmRewardedAd';
 
 // Shown every time the user starts an identification while they still have
@@ -13,6 +13,7 @@ import { useFilmRewardedAd } from '../hooks/useFilmRewardedAd';
 // option, which tops up the balance for future use.
 export default function FilmChoiceModal({ visible, onClose, filmBalance, onUseFilm, onAdEarned }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const { isLoaded: adLoaded, showAd } = useFilmRewardedAd(onAdEarned);
 
   const handleWatchAd = () => {

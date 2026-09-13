@@ -2,21 +2,52 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-// Field-guide dark theme
-const PALETTE = {
-  bg: 'rgb(14, 17, 22)', // very dark slate
-  surface: '#0f1720',
-  card: '#131722', // slightly lighter card
-  cardAlt: '#1b2430',
-  cardBorder: '#232c38', // hairline used for elevation instead of drop shadows
+// Brand colors stay the same in both themes — only the neutral surfaces and
+// text below flip. Exported on its own for the rare non-component context
+// (domain/rewardDisplay.js) that needs a color without going through
+// useAppStyles().
+export const BRAND = {
   primary: '#1f9d6b', // forest green — the app's one signature color
   accent: '#f59e0b', // amber — reserved for caution/low-confidence states
   danger: '#f44336', // reserved strictly for real errors
-  mutedText: '#9aa6b2',
-  textOnDark: '#e6eef8',
 };
 
-const styles = StyleSheet.create({
+function buildPalette(theme) {
+  if (theme === 'light') {
+    return {
+      ...BRAND,
+      bg: '#f4f6f9',
+      surface: '#eef1f5',
+      card: '#ffffff',
+      cardAlt: '#eef1f5',
+      cardBorder: '#dfe4ea',
+      mutedText: '#5b6672',
+      // Name is a holdover from when the app was dark-only — it's really
+      // just "the primary text color," light or dark.
+      textOnDark: '#12161c',
+    };
+  }
+  // Field-guide dark theme (the app's original, and still the default).
+  return {
+    ...BRAND,
+    bg: 'rgb(14, 17, 22)', // very dark slate
+    surface: '#0f1720',
+    card: '#131722', // slightly lighter card
+    cardAlt: '#1b2430',
+    cardBorder: '#232c38', // hairline used for elevation instead of drop shadows
+    mutedText: '#9aa6b2',
+    textOnDark: '#e6eef8',
+  };
+}
+
+// Builds the full stylesheet for a resolved theme ('light' or 'dark') — see
+// hooks/useAppStyles.js, which resolves the user's theme preference
+// (including 'system') and memoizes this per theme so components re-render
+// with the right colors when it changes.
+export function createStyles(theme) {
+  const PALETTE = buildPalette(theme);
+
+  return StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: PALETTE.bg,
@@ -130,6 +161,10 @@ const styles = StyleSheet.create({
   },
   statusUnhealthy: {
     backgroundColor: PALETTE.danger,
+  },
+  settingsButton: {
+    marginLeft: 10,
+    padding: 2,
   },
   healthBanner: {
     flexDirection: 'row',
@@ -343,7 +378,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   loadingText: {
-    color: '#ffffff',
+    color: PALETTE.textOnDark,
     fontSize: 18,
     fontWeight: '700',
     textAlign: 'center',
@@ -1347,7 +1382,39 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  PALETTE,
-});
+  // Settings screen
+  settingsSection: {
+    marginBottom: 26,
+  },
+  settingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: PALETTE.cardAlt,
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  settingsRowSelected: {
+    borderColor: PALETTE.primary,
+  },
+  settingsRowTextWrap: {
+    flex: 1,
+    marginRight: 12,
+  },
+  settingsRowTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: PALETTE.textOnDark,
+  },
+  settingsRowSub: {
+    fontSize: 12,
+    color: PALETTE.mutedText,
+    marginTop: 2,
+  },
 
-export default styles;
+  PALETTE,
+  });
+}

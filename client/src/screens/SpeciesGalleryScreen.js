@@ -3,7 +3,7 @@ import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Image, Alert } 
 import { useDispatch, useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { formatSpeciesName } from '../domain/species';
 import ImageLightbox from '../components/ImageLightbox';
 import SpeciesFactsCard from '../components/SpeciesFactsCard';
@@ -11,6 +11,7 @@ import { deleteSighting } from '../store/lifeListSlice';
 
 export default function SpeciesGalleryScreen({ speciesId, onBack }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const [lightboxUri, setLightboxUri] = useState(null);
   const speciesName = formatSpeciesName(speciesId);
   const dispatch = useDispatch();

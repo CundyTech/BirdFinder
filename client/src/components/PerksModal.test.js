@@ -1,17 +1,17 @@
 import React from 'react';
 import renderer, { act } from 'react-test-renderer';
-import { Text, TouchableOpacity, Alert, DevSettings } from 'react-native';
+import { Text } from 'react-native';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import PerksModal from './PerksModal';
 import rewardsReducer, { hydrateRewards } from '../store/rewardsSlice';
+import settingsReducer from '../store/settingsSlice';
 import useTrophyCategories from '../hooks/useTrophyCategories';
 import { FRAMES } from '../domain/frames';
 
 // useTrophyCategories does a network-backed rarity fetch and reads several
 // redux slices — mocking it isolates PerksModal's own logic (unlocked
-// state, the Frames rollup, the debug tools) from all of that.
+// state, the Frames rollup) from all of that.
 jest.mock('../hooks/useTrophyCategories');
 
 // @expo/vector-icons' real Icon component reads expo-font's native module
@@ -36,7 +36,7 @@ const MILESTONES = [
 ];
 
 function makeStore(rewardsOverrides = {}) {
-  const store = configureStore({ reducer: { rewards: rewardsReducer } });
+  const store = configureStore({ reducer: { rewards: rewardsReducer, settings: settingsReducer } });
   store.dispatch(
     hydrateRewards.fulfilled({
       rerollTokens: 0,
@@ -74,18 +74,6 @@ function findByText(root, text) {
   return root.findAll((node) => node.type === Text && textOf(node) === text);
 }
 
-// Rows are TouchableOpacity (Frames, debug tools) or a plain View (the
-// non-frame perk rows, which have nothing to tap) — walk up from the title
-// text to whichever is the nearest interactive ancestor.
-function pressRowNamed(root, title) {
-  let node = findByText(root, title)[0].parent;
-  while (node && node.type !== TouchableOpacity) node = node.parent;
-  if (!node) throw new Error(`"${title}" isn't inside a pressable row`);
-  act(() => {
-    node.props.onPress();
-  });
-}
-
 describe('PerksModal', () => {
   beforeEach(() => {
     useTrophyCategories.mockReturnValue([{ id: 'milestones', trophies: MILESTONES }]);
@@ -113,74 +101,5 @@ describe('PerksModal', () => {
     // Individual frame milestones (Frequent Flyer, Century Club, ...) don't
     // get their own row.
     expect(findByText(root, 'Floral Frame')).toHaveLength(0);
-  });
-
-  it('shows the debug tools in a __DEV__ build', () => {
-    const root = renderModal(makeStore());
-    expect(findByText(root, 'Unlock All Perks')).toHaveLength(1);
-    expect(findByText(root, 'Wipe All Data')).toHaveLength(1);
-  });
-
-  it('hides the debug tools outside a __DEV__ build', () => {
-    const originalDev = global.__DEV__;
-    global.__DEV__ = false;
-    try {
-      const root = renderModal(makeStore());
-      expect(findByText(root, 'Unlock All Perks')).toHaveLength(0);
-      expect(findByText(root, 'Wipe All Data')).toHaveLength(0);
-    } finally {
-      global.__DEV__ = originalDev;
-    }
-  });
-
-  it('Unlock All Perks grants every milestone reward at once, regardless of live progress', async () => {
-    const store = makeStore();
-    const root = renderModal(store);
-
-    await act(async () => {
-      pressRowNamed(root, 'Unlock All Perks');
-      // Flush the grantMilestoneRewards thunk's storage round-trip.
-      await Promise.resolve();
-      await Promise.resolve();
-    });
-
-    const state = store.getState().rewards;
-    expect(new Set(state.ownedFrameIds)).toEqual(
-      new Set(['floral-frame', 'polaroid-frame', 'wood-frame', 'calendar-frame', 'baroque-frame'])
-    );
-    expect(state.rerollTokens).toBe(1);
-    expect(state.streakProtectionTokens).toBe(1);
-    expect(state.deepDiveLoreUnlocked).toBe(true);
-    expect(state.claimedMilestoneKeys).toHaveLength(MILESTONES.length);
-  });
-
-  it('Wipe All Data confirms before clearing storage and reloading', async () => {
-    const alertSpy = jest.spyOn(Alert, 'alert');
-    const reloadSpy = jest.spyOn(DevSettings, 'reload').mockImplementation(() => {});
-    const clearSpy = jest.spyOn(AsyncStorage, 'clear').mockResolvedValue();
-
-    const root = renderModal(makeStore());
-
-    act(() => {
-      pressRowNamed(root, 'Wipe All Data');
-    });
-
-    expect(alertSpy).toHaveBeenCalledTimes(1);
-    expect(clearSpy).not.toHaveBeenCalled();
-
-    const buttons = alertSpy.mock.calls[0][2];
-    const wipeButton = buttons.find((b) => b.text === 'Wipe');
-    expect(wipeButton.style).toBe('destructive');
-
-    await act(async () => {
-      await wipeButton.onPress();
-    });
-
-    expect(clearSpy).toHaveBeenCalledTimes(1);
-    expect(reloadSpy).toHaveBeenCalledTimes(1);
-
-    alertSpy.mockRestore();
-    reloadSpy.mockRestore();
-    clearSpy.mockRestore();
   });
 });

@@ -3,12 +3,13 @@ import { SafeAreaView, ScrollView, View, Text, TouchableOpacity } from 'react-na
 import { useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import styles from '../styles';
+import useAppStyles from '../hooks/useAppStyles';
 import { SPECIES, SPECIES_COUNT } from '../domain/species';
 import SpeciesTile from '../components/SpeciesTile';
 
 export default function LifeListScreen({ onBack, onOpenSpecies }) {
   const { t } = useTranslation();
+  const styles = useAppStyles();
   const sightings = useSelector((state) => state.lifeList.sightings);
 
   const bySpecies = useMemo(() => {
