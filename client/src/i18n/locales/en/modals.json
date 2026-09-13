@@ -1,0 +1,42 @@
+{
+  "outOfFilm": {
+    "title": "Out of Film",
+    "subtitle": "You're out of Film for now. Grab more below, or come back tomorrow for a free refill.",
+    "useReroll": "Use a free reroll",
+    "rerollTokensAvailable_one": "{{count}} reroll token available, earned from milestones",
+    "rerollTokensAvailable_other": "{{count}} reroll tokens available, earned from milestones",
+    "watchAd": "Watch an ad",
+    "adFreeFilm": "+5 Film, free",
+    "unlockUnlimited": "Unlock unlimited Film",
+    "processing": "Processing...",
+    "unlockSub": "One-time purchase, removes ads too{{price}}",
+    "maybeLater": "Maybe later"
+  },
+  "filmChoice": {
+    "title": "Ready to identify?",
+    "subtitle": "Use a Film, or watch a quick ad to cover this one for free.",
+    "useFilm": "Use 1 Film",
+    "filmAvailable": "{{count}} Film available",
+    "watchAdInstead": "Watch an ad instead",
+    "adCoversId": "Covers this identification, free"
+  },
+  "framePicker": {
+    "title": "Frames",
+    "subtitle": "Earned from milestones. Pick one to frame your photos when viewing them full-screen."
+  },
+  "perks": {
+    "title": "Perks",
+    "subtitle": "What you've earned from milestones.",
+    "framesTitle": "Frames",
+    "framesSub": "{{owned}} of {{total}} unlocked — tap to choose which one to wear",
+    "framesAccessibilityLabel": "Frames, {{owned}} of {{total}} unlocked",
+    "debugSectionLabel": "Debug (this build only)",
+    "unlockAllPerksTitle": "Unlock All Perks",
+    "unlockAllPerksSub": "Grants every milestone reward immediately",
+    "wipeAllDataTitle": "Wipe All Data",
+    "wipeAllDataSub": "Clears sightings, streaks, Film, and perks — reloads the app",
+    "wipeConfirmTitle": "Wipe all data?",
+    "wipeConfirmMessage": "Clears every saved sighting, streak, Film balance, and perk. This cannot be undone.",
+    "wipe": "Wipe"
+  }
+}

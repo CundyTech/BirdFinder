@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import { LOW_CONFIDENCE_THRESHOLD } from '../config';
 
 // Behavior-based trophies — about how you use the app (accuracy, regular
@@ -12,9 +13,16 @@ export function computeSharpEyeTrophy(sightings) {
   const qualifying = sightings.filter((s) => (s.confidence || 0) * 100 >= LOW_CONFIDENCE_THRESHOLD);
   return {
     type: 'behavior',
-    label: 'Sharp Eye',
-    description: `Save ${SHARP_EYE_TARGET} sightings with a strong-match identification (${LOW_CONFIDENCE_THRESHOLD}%+ confidence).`,
-    unitLabel: 'strong matches',
+    // Frozen English identity used as this trophy's persisted claim-key
+    // (see useTrophyCategories.js's makeTrophy and App.js) — must never
+    // change even if `label`'s translation does.
+    key: 'Sharp Eye',
+    label: i18n.t('achievements.sharpEye.label'),
+    description: i18n.t('achievements.sharpEye.description', {
+      target: SHARP_EYE_TARGET,
+      threshold: LOW_CONFIDENCE_THRESHOLD,
+    }),
+    unitLabel: i18n.t('achievements.sharpEye.unitLabel'),
     current: qualifying.length,
     target: SHARP_EYE_TARGET,
     unlocked: qualifying.length >= SHARP_EYE_TARGET,
@@ -29,9 +37,10 @@ export function computeRegularBirderTrophy(sightings) {
   const distinctDays = new Set(sightings.map((s) => s.capturedAt.slice(0, 10)));
   return {
     type: 'behavior',
-    label: 'Regular Birder',
-    description: `Log at least one sighting on ${REGULAR_BIRDER_TARGET_DAYS} different days.`,
-    unitLabel: 'days',
+    key: 'Regular Birder',
+    label: i18n.t('achievements.regularBirder.label'),
+    description: i18n.t('achievements.regularBirder.description', { target: REGULAR_BIRDER_TARGET_DAYS }),
+    unitLabel: i18n.t('achievements.regularBirder.unitLabel'),
     current: distinctDays.size,
     target: REGULAR_BIRDER_TARGET_DAYS,
     unlocked: distinctDays.size >= REGULAR_BIRDER_TARGET_DAYS,
@@ -57,12 +66,16 @@ export function computeMilestoneTrophies({
   rarityComplete,
   cabinetComplete,
 }) {
+  // Each `key` is the frozen English identity used as this milestone's
+  // persisted claim-key (see PerksModal.js, App.js) — must never change
+  // even if `label`'s translation does.
   return [
     {
       type: 'behavior',
-      label: 'First Reroll',
-      description: `Save ${REROLL_MILESTONE_SIGHTINGS} sightings to earn a free reroll token (skips the Film cost once).`,
-      unitLabel: 'sightings',
+      key: 'First Reroll',
+      label: i18n.t('achievements.milestones.firstReroll.label'),
+      description: i18n.t('achievements.milestones.firstReroll.description', { target: REROLL_MILESTONE_SIGHTINGS }),
+      unitLabel: i18n.t('achievements.milestones.firstReroll.unitLabel'),
       current: Math.min(sightingsCount, REROLL_MILESTONE_SIGHTINGS),
       target: REROLL_MILESTONE_SIGHTINGS,
       unlocked: sightingsCount >= REROLL_MILESTONE_SIGHTINGS,
@@ -71,9 +84,10 @@ export function computeMilestoneTrophies({
     },
     {
       type: 'behavior',
-      label: 'Frequent Flyer',
-      description: `Save ${FRAME_MILESTONE_SIGHTINGS} sightings to unlock the Floral Frame.`,
-      unitLabel: 'sightings',
+      key: 'Frequent Flyer',
+      label: i18n.t('achievements.milestones.frequentFlyer.label'),
+      description: i18n.t('achievements.milestones.frequentFlyer.description', { target: FRAME_MILESTONE_SIGHTINGS }),
+      unitLabel: i18n.t('achievements.milestones.frequentFlyer.unitLabel'),
       current: Math.min(sightingsCount, FRAME_MILESTONE_SIGHTINGS),
       target: FRAME_MILESTONE_SIGHTINGS,
       unlocked: sightingsCount >= FRAME_MILESTONE_SIGHTINGS,
@@ -82,9 +96,10 @@ export function computeMilestoneTrophies({
     },
     {
       type: 'behavior',
-      label: 'Century Club',
-      description: `Save ${CENTURY_CLUB_SIGHTINGS} sightings to unlock the Polaroid Frame.`,
-      unitLabel: 'sightings',
+      key: 'Century Club',
+      label: i18n.t('achievements.milestones.centuryClub.label'),
+      description: i18n.t('achievements.milestones.centuryClub.description', { target: CENTURY_CLUB_SIGHTINGS }),
+      unitLabel: i18n.t('achievements.milestones.centuryClub.unitLabel'),
       current: Math.min(sightingsCount, CENTURY_CLUB_SIGHTINGS),
       target: CENTURY_CLUB_SIGHTINGS,
       unlocked: sightingsCount >= CENTURY_CLUB_SIGHTINGS,
@@ -93,9 +108,10 @@ export function computeMilestoneTrophies({
     },
     {
       type: 'behavior',
-      label: 'Locked In',
-      description: `Reach a ${STREAK_PROTECTION_MILESTONE_DAYS}-day streak to earn a streak protection token (covers one missed day).`,
-      unitLabel: 'day streak',
+      key: 'Locked In',
+      label: i18n.t('achievements.milestones.lockedIn.label'),
+      description: i18n.t('achievements.milestones.lockedIn.description', { target: STREAK_PROTECTION_MILESTONE_DAYS }),
+      unitLabel: i18n.t('achievements.milestones.lockedIn.unitLabel'),
       current: Math.min(longestStreak, STREAK_PROTECTION_MILESTONE_DAYS),
       target: STREAK_PROTECTION_MILESTONE_DAYS,
       unlocked: longestStreak >= STREAK_PROTECTION_MILESTONE_DAYS,
@@ -104,9 +120,10 @@ export function computeMilestoneTrophies({
     },
     {
       type: 'behavior',
-      label: 'Dedicated Birder',
-      description: `Reach a ${STREAK_FRAME_MILESTONE_DAYS}-day streak to unlock the Wood Frame.`,
-      unitLabel: 'day streak',
+      key: 'Dedicated Birder',
+      label: i18n.t('achievements.milestones.dedicatedBirder.label'),
+      description: i18n.t('achievements.milestones.dedicatedBirder.description', { target: STREAK_FRAME_MILESTONE_DAYS }),
+      unitLabel: i18n.t('achievements.milestones.dedicatedBirder.unitLabel'),
       current: Math.min(longestStreak, STREAK_FRAME_MILESTONE_DAYS),
       target: STREAK_FRAME_MILESTONE_DAYS,
       unlocked: longestStreak >= STREAK_FRAME_MILESTONE_DAYS,
@@ -115,9 +132,10 @@ export function computeMilestoneTrophies({
     },
     {
       type: 'behavior',
-      label: 'Field Notes',
-      description: `Log a sighting on ${FIELD_NOTES_DISTINCT_DAYS} different days to unlock the Calendar Frame.`,
-      unitLabel: 'days',
+      key: 'Field Notes',
+      label: i18n.t('achievements.milestones.fieldNotes.label'),
+      description: i18n.t('achievements.milestones.fieldNotes.description', { target: FIELD_NOTES_DISTINCT_DAYS }),
+      unitLabel: i18n.t('achievements.milestones.fieldNotes.unitLabel'),
       current: Math.min(distinctDays, FIELD_NOTES_DISTINCT_DAYS),
       target: FIELD_NOTES_DISTINCT_DAYS,
       unlocked: distinctDays >= FIELD_NOTES_DISTINCT_DAYS,
@@ -126,9 +144,10 @@ export function computeMilestoneTrophies({
     },
     {
       type: 'behavior',
-      label: "Completionist's Notes",
-      description: 'Complete every Rarity trophy to unlock deep-dive lore on every species profile.',
-      unitLabel: 'complete',
+      key: "Completionist's Notes",
+      label: i18n.t("achievements.milestones.completionistsNotes.label"),
+      description: i18n.t('achievements.milestones.completionistsNotes.description'),
+      unitLabel: i18n.t('achievements.milestones.completionistsNotes.unitLabel'),
       current: rarityComplete ? 1 : 0,
       target: 1,
       unlocked: rarityComplete,
@@ -137,9 +156,10 @@ export function computeMilestoneTrophies({
     },
     {
       type: 'behavior',
-      label: 'Full Cabinet',
-      description: 'Unlock every other trophy to earn the Baroque Frame.',
-      unitLabel: 'complete',
+      key: 'Full Cabinet',
+      label: i18n.t('achievements.milestones.fullCabinet.label'),
+      description: i18n.t('achievements.milestones.fullCabinet.description'),
+      unitLabel: i18n.t('achievements.milestones.fullCabinet.unitLabel'),
       current: cabinetComplete ? 1 : 0,
       target: 1,
       unlocked: cabinetComplete,

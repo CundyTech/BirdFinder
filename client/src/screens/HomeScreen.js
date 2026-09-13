@@ -3,8 +3,10 @@ import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Alert, Linking 
 import * as ImagePicker from 'expo-image-picker';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { MIN_LOADING_DURATION_MS } from '../config';
+import i18n from '../i18n';
 import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
 import { recordSighting } from '../store/lifeListSlice';
 import { spendFilm } from '../store/filmSlice';
@@ -25,10 +27,11 @@ import FilmChoiceModal from '../components/FilmChoiceModal';
 // { status: 'FETCH_ERROR', error: <message> } for a network failure.
 function describeQueryError(err, httpPrefix) {
     if (typeof err?.status === 'number') return `${httpPrefix} (${err.status})`;
-    return err?.error || 'Something went wrong. Please try again.';
+    return err?.error || i18n.t('home.genericError');
 }
 
 export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
+    const { t } = useTranslation();
     const [imageUri, setImageUri] = useState(null);
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -48,7 +51,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
     const unlockedForever = useSelector((state) => state.premium.unlockedForever);
     const trophyCategories = useTrophyCategories();
     const allTrophies = trophyCategories.flatMap((c) => c.trophies || []);
-    const unlockedTrophyCount = allTrophies.filter((t) => t.unlocked).length;
+    const unlockedTrophyCount = allTrophies.filter((trophy) => trophy.unlocked).length;
     const totalTrophyCount = allTrophies.length;
 
     // What this identification will actually cost — mirrors the spend
@@ -74,7 +77,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
     const [uploadPhoto] = useUploadPhotoMutation();
 
     const apiHealth = healthQueryError
-        ? { status: 'unhealthy', error: describeQueryError(healthQueryError, 'HTTP') }
+        ? { status: 'unhealthy', error: describeQueryError(healthQueryError, t('home.healthErrorPrefix')) }
         : healthData
             ? { status: 'healthy', ...healthData }
             : null;
@@ -84,15 +87,15 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
         if (permission.status !== 'granted') {
             if (permission.canAskAgain === false) {
                 Alert.alert(
-                    'Camera access needed',
-                    'Camera access is currently blocked. Enable it in Settings to identify birds by photo.',
+                    t('home.cameraAccessNeededTitle'),
+                    t('home.cameraAccessNeededMessage'),
                     [
-                        { text: 'Cancel', style: 'cancel' },
-                        { text: 'Open Settings', onPress: () => Linking.openSettings() },
+                        { text: t('common.cancel'), style: 'cancel' },
+                        { text: t('home.openSettings'), onPress: () => Linking.openSettings() },
                     ]
                 );
             } else {
-                Alert.alert('Camera permission required', 'We need camera access to take a photo of the bird.');
+                Alert.alert(t('home.cameraPermissionRequiredTitle'), t('home.cameraPermissionRequiredMessage'));
             }
             return;
         }
@@ -176,7 +179,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
             else if (spendKind === 'reroll') dispatch(spendReroll());
             setResult(json);
         } catch (err) {
-            setError(describeQueryError(err, 'Server error'));
+            setError(describeQueryError(err, t('home.uploadErrorPrefix')));
         } finally {
             const remaining = MIN_LOADING_DURATION_MS - (Date.now() - startedAt);
             if (remaining > 0) {
@@ -220,21 +223,21 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                             <View style={styles.heroIconCircle}>
                                 <Feather name="camera" size={32} color="#ffffff" />
                             </View>
-                            <Text style={styles.heroTitle}>Identify a Bird</Text>
-                            <Text style={styles.heroSubtitle}>Point your camera at a bird and we'll tell you what it is.</Text>
+                            <Text style={styles.heroTitle}>{t('home.heroTitle')}</Text>
+                            <Text style={styles.heroSubtitle}>{t('home.heroSubtitle')}</Text>
                             <View style={styles.heroButton}>
-                                <Text style={styles.heroButtonText}>Take a Photo</Text>
+                                <Text style={styles.heroButtonText}>{t('home.heroButtonText')}</Text>
                             </View>
                         </TouchableOpacity>
 
-                        <Text style={styles.sectionLabel}>Your collection</Text>
+                        <Text style={styles.sectionLabel}>{t('home.sectionLabel')}</Text>
 
                         <TouchableOpacity style={styles.tile} onPress={onOpenTrophies} activeOpacity={0.8}>
                             <View style={styles.tileLeft}>
                                 <View style={styles.tileIcon}><MaterialCommunityIcons name="trophy" size={22} color={styles.PALETTE.primary} /></View>
                                 <View>
-                                    <Text style={styles.tileText}>Trophy Cabinet</Text>
-                                    <Text style={styles.tileSub}>Collect rarity trophies</Text>
+                                    <Text style={styles.tileText}>{t('home.trophyCabinetTileTitle')}</Text>
+                                    <Text style={styles.tileSub}>{t('home.trophyCabinetTileSub')}</Text>
                                 </View>
                             </View>
                             <View style={styles.tileCountBadge}>
@@ -246,8 +249,8 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                             <View style={styles.tileLeft}>
                                 <View style={styles.tileIcon}><Feather name="book-open" size={22} color={styles.PALETTE.primary} /></View>
                                 <View>
-                                    <Text style={styles.tileText}>My Sightings Log</Text>
-                                    <Text style={styles.tileSub}>Your recorded sightings</Text>
+                                    <Text style={styles.tileText}>{t('home.lifeListTileTitle')}</Text>
+                                    <Text style={styles.tileSub}>{t('home.lifeListTileSub')}</Text>
                                 </View>
                             </View>
                             <View style={styles.tileCountBadge}>
@@ -260,14 +263,14 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
                 {/* Error state */}
                 {error && !loading && (
                     <View style={styles.errorCard}>
-                        <Text style={styles.errorTitle}>Couldn't identify that photo</Text>
+                        <Text style={styles.errorTitle}>{t('home.errorTitle')}</Text>
                         <Text style={styles.errorText}>{error}</Text>
                         <View style={styles.errorButtonRow}>
                             <TouchableOpacity style={styles.resultActionButton} onPress={() => uploadImage(imageUri)}>
-                                <Text style={styles.resultActionText}>Retry</Text>
+                                <Text style={styles.resultActionText}>{t('common.retry')}</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.resultActionButtonSecondary} onPress={pickImage}>
-                                <Text style={styles.resultActionTextSecondary}>New Photo</Text>
+                                <Text style={styles.resultActionTextSecondary}>{t('home.newPhoto')}</Text>
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -282,10 +285,10 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies }) {
             {result && !loading && (
                 <View style={styles.resultFooter}>
                     <TouchableOpacity style={styles.resultActionButton} onPress={pickImage}>
-                        <Text style={styles.resultActionText}>Identify Another Bird</Text>
+                        <Text style={styles.resultActionText}>{t('home.identifyAnotherBird')}</Text>
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.resultActionButtonSecondary} onPress={resetToHome}>
-                        <Text style={styles.resultActionTextSecondary}>Back to Home</Text>
+                        <Text style={styles.resultActionTextSecondary}>{t('home.backToHome')}</Text>
                     </TouchableOpacity>
                 </View>
             )}

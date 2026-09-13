@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { StatusBar, BackHandler } from 'react-native';
 import { Provider, useDispatch, useSelector } from 'react-redux';
+import './src/i18n';
 import { store } from './src/store';
 import { hydrateLifeList } from './src/store/lifeListSlice';
 import { hydrateFilm, claimDailyRefill, claimTrophyRewards } from './src/store/filmSlice';
@@ -53,7 +54,7 @@ function RootNavigator() {
       .flatMap((category) =>
         (category.trophies || [])
           .filter((trophy) => trophy.unlocked)
-          .map((trophy) => `${category.id}:${trophy.label}`)
+          .map((trophy) => `${category.id}:${trophy.key}`)
       );
     if (unlockedKeys.length > 0) dispatch(claimTrophyRewards(unlockedKeys));
   }, [filmHydrated, trophyCategories, dispatch]);
@@ -66,7 +67,7 @@ function RootNavigator() {
     const milestonesCategory = trophyCategories.find((category) => category.id === 'milestones');
     const unlockedMilestones = (milestonesCategory?.trophies || [])
       .filter((trophy) => trophy.unlocked)
-      .map((trophy) => ({ key: `milestones:${trophy.label}`, reward: trophy.reward }));
+      .map((trophy) => ({ key: `milestones:${trophy.key}`, reward: trophy.reward }));
     if (unlockedMilestones.length > 0) dispatch(grantMilestoneRewards(unlockedMilestones));
   }, [rewardsHydrated, trophyCategories, dispatch]);
 

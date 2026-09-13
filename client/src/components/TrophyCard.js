@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { rewardDisplay } from '../domain/rewardDisplay';
 
@@ -34,6 +35,7 @@ function SpeciesTrophyBody({ trophy, onOpenSpecies }) {
 }
 
 function BehaviorTrophyBody({ trophy, onOpenSpecies }) {
+  const { t } = useTranslation();
   if (!trophy.qualifyingSightings || trophy.qualifyingSightings.length === 0) {
     return <Text style={styles.trophyCategoryDescription}>{trophy.description}</Text>;
   }
@@ -45,7 +47,7 @@ function BehaviorTrophyBody({ trophy, onOpenSpecies }) {
           style={styles.galleryGridTile}
           onPress={() => onOpenSpecies(sighting.speciesId)}
           accessibilityRole="imagebutton"
-          accessibilityLabel="View this sighting's species"
+          accessibilityLabel={t('components.trophyCard.viewSightingSpecies')}
         >
           <View style={styles.galleryGridTileTouchable}>
             <Image source={{ uri: sighting.photoUri }} style={styles.galleryGridImage} />
@@ -57,13 +59,16 @@ function BehaviorTrophyBody({ trophy, onOpenSpecies }) {
 }
 
 export default function TrophyCard({ trophy, expanded, onToggleExpand, onOpenSpecies }) {
+  const { t } = useTranslation();
   const { type, label, unlocked } = trophy;
   const isBehavior = type === 'behavior';
 
   const current = isBehavior ? trophy.current : trophy.caughtCount;
   const target = isBehavior ? trophy.target : trophy.total;
   const progress = target > 0 ? Math.min(current / target, 1) : 0;
-  const progressText = isBehavior ? `${current} / ${target} ${trophy.unitLabel}` : `${current} / ${target} caught`;
+  const progressText = isBehavior
+    ? t('components.trophyCard.progressBehavior', { current, target, unitLabel: trophy.unitLabel })
+    : t('components.trophyCard.progressSpecies', { current, target });
   const reward = unlocked ? rewardDisplay(trophy.reward) : null;
 
   return (
@@ -72,7 +77,11 @@ export default function TrophyCard({ trophy, expanded, onToggleExpand, onOpenSpe
         style={styles.trophyCardHeader}
         onPress={onToggleExpand}
         accessibilityRole="button"
-        accessibilityLabel={`${label} trophy, ${progressText}, ${expanded ? 'collapse' : 'expand'} details`}
+        accessibilityLabel={t('components.trophyCard.accessibilityLabel', {
+          label,
+          progressText,
+          action: expanded ? t('components.trophyCard.collapse') : t('components.trophyCard.expand'),
+        })}
       >
         <View style={styles.trophyIconWrap}>
           <View style={[styles.trophyIconCircle, unlocked && styles.trophyIconCircleUnlocked]}>

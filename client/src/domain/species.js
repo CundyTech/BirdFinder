@@ -1,7 +1,9 @@
+import i18n from '../i18n';
+
 // The 60 species the model was trained on (model/h5/labels.json), duplicated
 // here so the client has its own copy to build the life list roster from —
 // keep in sync if the model is retrained with a different species set.
-const SPECIES_IDS = [
+export const SPECIES_IDS = [
   'Barn_Owl',
   'Barn_Swallow',
   'Black_headed_Gull',
@@ -141,26 +143,31 @@ export const TAXON_IDS = {
 // different family from the other tits (Aegithalidae vs Paridae), but
 // splitting it out would be a confusing trophy for anyone but a taxonomist.
 // Every one of the 60 species belongs to exactly one group.
+// Each group's `key` is the frozen English label used as its trophy-storage
+// identity (see useTrophyCategories.js's makeTrophy) — it must never change
+// even if `label`'s translation does, since it's part of the persisted
+// claimed-trophy key. `label` is what's actually displayed, resolved
+// through i18n so a future language just adds translations for these keys.
 export const TYPE_GROUPS = [
-  { id: 'tits', label: 'Tits' },
-  { id: 'corvids', label: 'Crows & Corvids' },
-  { id: 'raptors', label: 'Birds of Prey' },
-  { id: 'owls', label: 'Owls' },
-  { id: 'waterfowl', label: 'Waterfowl' },
-  { id: 'gulls', label: 'Gulls' },
-  { id: 'thrushes', label: 'Thrushes' },
-  { id: 'finches', label: 'Finches' },
-  { id: 'woodpeckers', label: 'Woodpeckers' },
-  { id: 'wagtails', label: 'Wagtails' },
-  { id: 'doves', label: 'Doves & Pigeons' },
-  { id: 'warblers', label: 'Warblers' },
-  { id: 'waterside', label: 'Waterside Birds' },
-  { id: 'waders', label: 'Waders' },
-  { id: 'buntings', label: 'Buntings' },
-  { id: 'aerial', label: 'Swifts, Swallows & Martins' },
-  { id: 'climbers', label: 'Woodland Climbers' },
-  { id: 'gamebirds', label: 'Gamebirds' },
-  { id: 'songbirds', label: 'Garden & Countryside Songbirds' },
+  { id: 'tits', key: 'Tits', label: i18n.t('groups.type.Tits') },
+  { id: 'corvids', key: 'Crows & Corvids', label: i18n.t('groups.type.Crows & Corvids') },
+  { id: 'raptors', key: 'Birds of Prey', label: i18n.t('groups.type.Birds of Prey') },
+  { id: 'owls', key: 'Owls', label: i18n.t('groups.type.Owls') },
+  { id: 'waterfowl', key: 'Waterfowl', label: i18n.t('groups.type.Waterfowl') },
+  { id: 'gulls', key: 'Gulls', label: i18n.t('groups.type.Gulls') },
+  { id: 'thrushes', key: 'Thrushes', label: i18n.t('groups.type.Thrushes') },
+  { id: 'finches', key: 'Finches', label: i18n.t('groups.type.Finches') },
+  { id: 'woodpeckers', key: 'Woodpeckers', label: i18n.t('groups.type.Woodpeckers') },
+  { id: 'wagtails', key: 'Wagtails', label: i18n.t('groups.type.Wagtails') },
+  { id: 'doves', key: 'Doves & Pigeons', label: i18n.t('groups.type.Doves & Pigeons') },
+  { id: 'warblers', key: 'Warblers', label: i18n.t('groups.type.Warblers') },
+  { id: 'waterside', key: 'Waterside Birds', label: i18n.t('groups.type.Waterside Birds') },
+  { id: 'waders', key: 'Waders', label: i18n.t('groups.type.Waders') },
+  { id: 'buntings', key: 'Buntings', label: i18n.t('groups.type.Buntings') },
+  { id: 'aerial', key: 'Swifts, Swallows & Martins', label: i18n.t('groups.type.Swifts, Swallows & Martins') },
+  { id: 'climbers', key: 'Woodland Climbers', label: i18n.t('groups.type.Woodland Climbers') },
+  { id: 'gamebirds', key: 'Gamebirds', label: i18n.t('groups.type.Gamebirds') },
+  { id: 'songbirds', key: 'Garden & Countryside Songbirds', label: i18n.t('groups.type.Garden & Countryside Songbirds') },
 ];
 
 const TYPE_GROUP_BY_SPECIES = {
@@ -252,10 +259,10 @@ const TYPE_GROUP_BY_SPECIES = {
 // tradeoff as the family groupings above. Every species belongs to exactly
 // one habitat.
 export const HABITAT_GROUPS = [
-  { id: 'garden', label: 'Garden Birds' },
-  { id: 'woodland', label: 'Woodland Birds' },
-  { id: 'wetland', label: 'Wetland & Coastal Birds' },
-  { id: 'farmland', label: 'Farmland Birds' },
+  { id: 'garden', key: 'Garden Birds', label: i18n.t('groups.habitat.Garden Birds') },
+  { id: 'woodland', key: 'Woodland Birds', label: i18n.t('groups.habitat.Woodland Birds') },
+  { id: 'wetland', key: 'Wetland & Coastal Birds', label: i18n.t('groups.habitat.Wetland & Coastal Birds') },
+  { id: 'farmland', key: 'Farmland Birds', label: i18n.t('groups.habitat.Farmland Birds') },
 ];
 
 const HABITAT_BY_SPECIES = {
@@ -330,8 +337,8 @@ const HABITAT_BY_SPECIES = {
 // UK population stays put (e.g. gulls, wagtails) are still Residents,
 // since the species itself is present in the UK year-round.
 export const MIGRATION_GROUPS = [
-  { id: 'summer', label: 'Summer Visitors' },
-  { id: 'resident', label: 'Year-round Residents' },
+  { id: 'summer', key: 'Summer Visitors', label: i18n.t('groups.migration.Summer Visitors') },
+  { id: 'resident', key: 'Year-round Residents', label: i18n.t('groups.migration.Year-round Residents') },
 ];
 
 const SUMMER_VISITOR_IDS = new Set([
@@ -343,10 +350,14 @@ const SUMMER_VISITOR_IDS = new Set([
   'Common_Blackcap',
 ]);
 
-// Matches the formatting ResultCard.js applies to a raw predicted_class.
+// Also used directly on a raw predicted_class from the API (see
+// ResultCard.js/SwipeMatcher.js), hence the numeric-prefix strip. Falls back
+// to the mechanical underscore replacement for any id without a translation
+// entry, so an untranslated/unrecognised id still renders something sane.
 export function formatSpeciesName(id) {
   if (!id) return '';
-  return id.replace(/^\d+\./, '').replace(/_/g, ' ');
+  const cleanId = id.replace(/^\d+\./, '');
+  return i18n.t(`species.${cleanId}`, { defaultValue: cleanId.replace(/_/g, ' ') });
 }
 
 export const SPECIES = SPECIES_IDS.map((id) => ({

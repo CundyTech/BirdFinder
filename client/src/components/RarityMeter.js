@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { RARITY_MAX_PIPS } from '../domain/rarity';
 
@@ -7,11 +8,12 @@ import { RARITY_MAX_PIPS } from '../domain/rarity';
 // tile — `compact` swaps in smaller pips and drops the "UK rarity" label
 // (tile space is a fraction of the card's).
 export default function RarityMeter({ rarity, compact }) {
+  const { t } = useTranslation();
   if (!rarity) return null;
 
   return (
     <View style={compact ? styles.tileRarityRow : styles.rarityRow}>
-      {!compact && <Text style={styles.rarityLabel}>UK rarity</Text>}
+      {!compact && <Text style={styles.rarityLabel}>{t('components.rarityMeter.ukRarity')}</Text>}
       <View style={compact ? styles.tileRarityPipsRow : styles.rarityPipsRow}>
         {Array.from({ length: RARITY_MAX_PIPS }).map((_, i) => (
           <View

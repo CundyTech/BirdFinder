@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity, Image, Alert } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { formatSpeciesName } from '../domain/species';
 import ImageLightbox from '../components/ImageLightbox';
@@ -9,6 +10,7 @@ import SpeciesFactsCard from '../components/SpeciesFactsCard';
 import { deleteSighting } from '../store/lifeListSlice';
 
 export default function SpeciesGalleryScreen({ speciesId, onBack }) {
+  const { t } = useTranslation();
   const [lightboxUri, setLightboxUri] = useState(null);
   const speciesName = formatSpeciesName(speciesId);
   const dispatch = useDispatch();
@@ -21,12 +23,12 @@ export default function SpeciesGalleryScreen({ speciesId, onBack }) {
 
   const confirmDelete = (sighting) => {
     Alert.alert(
-      'Delete photo?',
-      `This removes your ${speciesName} photo from the sightings log. This can't be undone.`,
+      t('speciesGallery.deletePhotoTitle'),
+      t('speciesGallery.deletePhotoMessage', { speciesName }),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Delete',
+          text: t('speciesGallery.delete'),
           style: 'destructive',
           onPress: () => {
             if (lightboxUri === sighting.photoUri) setLightboxUri(null);
@@ -44,14 +46,14 @@ export default function SpeciesGalleryScreen({ speciesId, onBack }) {
           style={styles.subHeaderBackButton}
           onPress={onBack}
           accessibilityRole="button"
-          accessibilityLabel="Back to sightings log"
+          accessibilityLabel={t('speciesGallery.backToSightingsLog')}
         >
           <Feather name="chevron-left" size={22} color={styles.PALETTE.textOnDark} />
         </TouchableOpacity>
         <View style={styles.subHeaderTitleWrap}>
           <Text style={styles.subHeaderTitle}>{speciesName}</Text>
           <Text style={styles.subHeaderSubtitle}>
-            {catches.length} {catches.length === 1 ? 'photo' : 'photos'}
+            {t('speciesGallery.photoCount', { count: catches.length })}
           </Text>
         </View>
       </View>
@@ -63,10 +65,10 @@ export default function SpeciesGalleryScreen({ speciesId, onBack }) {
       >
         <SpeciesFactsCard speciesId={speciesId} speciesName={speciesName} />
 
-        <Text style={styles.sectionLabel}>Your snaps</Text>
+        <Text style={styles.sectionLabel}>{t('speciesGallery.sectionLabel')}</Text>
 
         {catches.length === 0 ? (
-          <Text style={styles.emptyStateText}>No photos of this species yet.</Text>
+          <Text style={styles.emptyStateText}>{t('speciesGallery.emptyStateText')}</Text>
         ) : (
           <View style={styles.galleryGrid}>
             {catches.map((sighting) => (
@@ -75,7 +77,7 @@ export default function SpeciesGalleryScreen({ speciesId, onBack }) {
                   style={styles.galleryGridTileTouchable}
                   onPress={() => setLightboxUri(sighting.photoUri)}
                   accessibilityRole="imagebutton"
-                  accessibilityLabel={`View photo of ${speciesName}`}
+                  accessibilityLabel={t('speciesGallery.viewPhotoOf', { speciesName })}
                 >
                   <Image source={{ uri: sighting.photoUri }} style={styles.galleryGridImage} />
                 </TouchableOpacity>
@@ -84,7 +86,7 @@ export default function SpeciesGalleryScreen({ speciesId, onBack }) {
                   onPress={() => confirmDelete(sighting)}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                   accessibilityRole="button"
-                  accessibilityLabel={`Delete this photo of ${speciesName}`}
+                  accessibilityLabel={t('speciesGallery.deletePhotoOf', { speciesName })}
                 >
                   <Feather name="trash-2" size={14} color="#ffffff" />
                 </TouchableOpacity>
@@ -96,7 +98,7 @@ export default function SpeciesGalleryScreen({ speciesId, onBack }) {
 
       <ImageLightbox
         uri={lightboxUri}
-        label={`Your photo of ${speciesName}, full screen`}
+        label={t('speciesGallery.photoOfFullScreen', { speciesName })}
         onClose={() => setLightboxUri(null)}
       />
     </SafeAreaView>

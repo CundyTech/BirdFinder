@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Image, TouchableOpacity, useWindowDimensions } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import ImageLightbox from './ImageLightbox';
 
 export default function ImageCard({ uri }) {
+  const { t } = useTranslation();
   const [viewerOpen, setViewerOpen] = useState(false);
   const { width, height } = useWindowDimensions();
   const isPortrait = height >= width;
@@ -17,11 +19,11 @@ export default function ImageCard({ uri }) {
       <TouchableOpacity
         onPress={() => setViewerOpen(true)}
         accessibilityRole="imagebutton"
-        accessibilityLabel="View your photo larger"
+        accessibilityLabel={t('common.viewPhotoLarger')}
       >
         <Image source={{ uri }} style={{ width: imageWidth, height: imageHeight, borderRadius: 8 }} />
       </TouchableOpacity>
-      <ImageLightbox uri={viewerOpen ? uri : null} label="Your photo, full screen" onClose={() => setViewerOpen(false)} />
+      <ImageLightbox uri={viewerOpen ? uri : null} label={t('common.photoFullScreen')} onClose={() => setViewerOpen(false)} />
     </View>
   );
 }

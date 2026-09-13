@@ -1,0 +1,26 @@
+{
+  "rarity": {
+    "label": "Rarity",
+    "description": "Catch every species in a rarity tier."
+  },
+  "types": {
+    "label": "Bird Families",
+    "description": "Catch every species in a family or type."
+  },
+  "habitats": {
+    "label": "Habitats",
+    "description": "Catch every species typically found in a habitat."
+  },
+  "migration": {
+    "label": "Migration",
+    "description": "Catch every species with a given migratory pattern."
+  },
+  "achievements": {
+    "label": "Achievements",
+    "description": "Milestones for how you use the app, not just what you catch."
+  },
+  "milestones": {
+    "label": "Milestones",
+    "description": "Special rewards for how far you've come — each grants something other than Film."
+  }
+}

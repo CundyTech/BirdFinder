@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import FloralFrame from '../../assets/frames/floral-frame.svg';
 import WoodFrame from '../../assets/frames/wood-frame.svg';
 import BaroqueFrame from '../../assets/frames/baroque-frame.svg';
@@ -14,8 +15,8 @@ import CalendarFrame from '../../assets/frames/calendar-frame.svg';
 export const FRAMES = [
   {
     id: 'floral-frame',
-    label: 'Floral Frame',
-    description: 'Earned for saving 25 sightings.',
+    label: i18n.t('rewards.frames.floral-frame.label'),
+    description: i18n.t('rewards.frames.floral-frame.description'),
     ringColor: '#e8536b',
     icon: 'flower',
     Svg: FloralFrame,
@@ -24,8 +25,8 @@ export const FRAMES = [
   },
   {
     id: 'wood-frame',
-    label: 'Wood Frame',
-    description: 'Earned for a 30-day streak.',
+    label: i18n.t('rewards.frames.wood-frame.label'),
+    description: i18n.t('rewards.frames.wood-frame.description'),
     ringColor: '#a9713f',
     icon: 'tree',
     Svg: WoodFrame,
@@ -34,8 +35,8 @@ export const FRAMES = [
   },
   {
     id: 'polaroid-frame',
-    label: 'Polaroid Frame',
-    description: 'Earned for saving 50 sightings.',
+    label: i18n.t('rewards.frames.polaroid-frame.label'),
+    description: i18n.t('rewards.frames.polaroid-frame.description'),
     ringColor: '#e5ddc8',
     icon: 'polaroid',
     Svg: PolaroidFrame,
@@ -44,8 +45,8 @@ export const FRAMES = [
   },
   {
     id: 'calendar-frame',
-    label: 'Calendar Frame',
-    description: 'Earned for sightings on 30 different days.',
+    label: i18n.t('rewards.frames.calendar-frame.label'),
+    description: i18n.t('rewards.frames.calendar-frame.description'),
     ringColor: '#c9a876',
     icon: 'calendar-month',
     Svg: CalendarFrame,
@@ -54,8 +55,8 @@ export const FRAMES = [
   },
   {
     id: 'baroque-frame',
-    label: 'Baroque Frame',
-    description: 'Earned for completing the trophy cabinet.',
+    label: i18n.t('rewards.frames.baroque-frame.label'),
+    description: i18n.t('rewards.frames.baroque-frame.description'),
     ringColor: '#d4af37',
     icon: 'crown',
     Svg: BaroqueFrame,

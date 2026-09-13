@@ -2,6 +2,7 @@ import React from 'react';
 import { Modal, TouchableOpacity, View, Image, useWindowDimensions } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { getFrame } from '../domain/frames';
 import FrameBorder from './FrameBorder';
@@ -31,6 +32,7 @@ function fitBox(aspectRatio, maxWidth, maxHeight) {
 // hand-drawn window cutout rather than just placed behind an unrelated
 // border, so it reads as a real photo sitting inside the frame.
 export default function ImageLightbox({ uri, label, onClose }) {
+  const { t } = useTranslation();
   const equippedFrame = useSelector((state) => getFrame(state.rewards.equippedFrameId));
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
@@ -54,7 +56,7 @@ export default function ImageLightbox({ uri, label, onClose }) {
           style={styles.lightboxCloseButton}
           onPress={onClose}
           accessibilityRole="button"
-          accessibilityLabel="Close image viewer"
+          accessibilityLabel={t('components.imageLightbox.closeImageViewer')}
           hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
         >
           <Feather name="x" size={24} color="#ffffff" />
@@ -66,7 +68,7 @@ export default function ImageLightbox({ uri, label, onClose }) {
               style={[styles.framedPhotoImage, windowStyle]}
               resizeMode="cover"
               accessible
-              accessibilityLabel={label || 'Full-screen photo'}
+              accessibilityLabel={label || t('components.imageLightbox.fullScreenPhoto')}
             />
             <FrameBorder frame={equippedFrame} />
           </View>
@@ -77,7 +79,7 @@ export default function ImageLightbox({ uri, label, onClose }) {
             style={styles.lightboxImage}
             resizeMode="contain"
             accessible
-            accessibilityLabel={label || 'Full-screen photo'}
+            accessibilityLabel={label || t('components.imageLightbox.fullScreenPhoto')}
           />
         )}
       </TouchableOpacity>

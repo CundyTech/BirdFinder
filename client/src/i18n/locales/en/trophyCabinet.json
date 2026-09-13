@@ -1,0 +1,6 @@
+{
+  "title": "Trophy Cabinet",
+  "subtitleProgress": "{{unlocked}} / {{total}} trophies earned",
+  "subtitleLoading": "Loading...",
+  "referenceLoadingText": "Loading rarity data..."
+}

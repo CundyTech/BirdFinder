@@ -33,7 +33,8 @@
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
       ],
-      "./plugins/withIapStoreFlavor.js"
+      "./plugins/withIapStoreFlavor.js",
+      "expo-localization"
     ],
     "android": {
       "package": "com.cundytech.birdfinder",

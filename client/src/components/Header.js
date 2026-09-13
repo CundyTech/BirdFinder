@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { getFrame } from '../domain/frames';
 import PerksModal from './PerksModal';
 
 export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
+  const { t } = useTranslation();
   const isHealthy = apiHealth?.status === 'healthy';
   const isUnhealthy = apiHealth?.status === 'unhealthy';
   const filmBalance = useSelector((state) => state.film.balance);
@@ -24,7 +26,11 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
           onPress={() => setShowPerks(true)}
           activeOpacity={0.8}
           accessibilityRole="button"
-          accessibilityLabel={equippedFrame ? `${equippedFrame.label} frame, tap to view perks` : 'View perks'}
+          accessibilityLabel={
+            equippedFrame
+              ? t('components.header.frameAccessibilityLabel', { frameLabel: equippedFrame.label })
+              : t('components.header.viewPerks')
+          }
         >
           <View
             style={[
@@ -43,8 +49,8 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
           </View>
         </TouchableOpacity>
         <View style={styles.brandTextWrap}>
-          <Text style={styles.brandTitle}>Bird Finder UK</Text>
-          <Text style={styles.brandSubtitle}>UK bird identification</Text>
+          <Text style={styles.brandTitle}>{t('components.header.brandTitle')}</Text>
+          <Text style={styles.brandSubtitle}>{t('components.header.brandSubtitle')}</Text>
         </View>
         {currentStreak > 0 && (
           <View style={styles.streakBadge}>
@@ -70,13 +76,13 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth }) {
       {healthLoading && (
         <View style={styles.healthBanner}>
           <ActivityIndicator size="small" color={styles.PALETTE.mutedText} />
-          <Text style={styles.healthBannerText}>Checking connection...</Text>
+          <Text style={styles.healthBannerText}>{t('components.header.checkingConnection')}</Text>
         </View>
       )}
 
       {!healthLoading && isUnhealthy && (
         <TouchableOpacity style={styles.healthBannerError} onPress={onRetryHealth}>
-          <Text style={styles.healthBannerErrorText}>Can't reach the server, tap to retry</Text>
+          <Text style={styles.healthBannerErrorText}>{t('components.header.cantReachServer')}</Text>
         </TouchableOpacity>
       )}
     </View>

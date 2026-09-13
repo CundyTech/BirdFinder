@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
+import i18n from '../i18n';
 import { useGetUkRarityMapQuery } from '../services/birdInfoApi';
 import { computeRarityTiers, RARITY_TIERS } from '../domain/rarity';
 import { SPECIES, TYPE_GROUPS, HABITAT_GROUPS, MIGRATION_GROUPS } from '../domain/species';
@@ -22,11 +23,13 @@ export function forceUnlocked(trophy) {
   return { ...trophy, current: trophy.target, unlocked: true };
 }
 
-// groupDefs is either TYPE_GROUPS/HABITAT_GROUPS/MIGRATION_GROUPS ({id,
-// label}) or RARITY_TIERS ({label, pips} — no id), so keys fall back to
-// label; getGroupIdForSpecies must return the matching one in each case.
+// groupDefs is either TYPE_GROUPS/HABITAT_GROUPS/MIGRATION_GROUPS ({id, key,
+// label}) or RARITY_TIERS ({key, label, pips} — no id), so keys fall back to
+// `key` (the frozen, untranslated identity — never `label`, which is
+// translated and so unsafe to use as a lookup/grouping key); getGroupIdForSpecies
+// must return the matching one in each case.
 export function groupSpecies(groupDefs, getGroupIdForSpecies) {
-  const speciesByGroupId = new Map(groupDefs.map((g) => [g.id ?? g.label, []]));
+  const speciesByGroupId = new Map(groupDefs.map((g) => [g.id ?? g.key, []]));
   for (const species of SPECIES) {
     const groupId = getGroupIdForSpecies(species);
     if (groupId) speciesByGroupId.get(groupId)?.push(species);
@@ -34,10 +37,14 @@ export function groupSpecies(groupDefs, getGroupIdForSpecies) {
   return speciesByGroupId;
 }
 
-export function makeTrophy(label, species, caughtSpeciesIds) {
+// `key` is the frozen English identity used as this trophy's persisted
+// claim-key (see App.js, PerksModal.js) — must never change even if `label`
+// is displayed in a different language. `label` is the translated text.
+export function makeTrophy(key, label, species, caughtSpeciesIds) {
   const caughtCount = species.filter((s) => caughtSpeciesIds.has(s.id)).length;
   return {
     type: 'species',
+    key,
     label,
     species,
     caughtSpeciesIds,
@@ -66,30 +73,30 @@ export default function useTrophyCategories() {
     const tierBySpeciesId = computeRarityTiers(rarityMap);
     let rarityTrophies = null;
     if (tierBySpeciesId) {
-      const speciesByTier = groupSpecies(RARITY_TIERS, (s) => tierBySpeciesId[s.id]?.label);
+      const speciesByTier = groupSpecies(RARITY_TIERS, (s) => tierBySpeciesId[s.id]?.key);
       rarityTrophies = RARITY_TIERS.map((def) =>
-        makeTrophy(def.label, speciesByTier.get(def.label) || [], caughtSpeciesIds)
+        makeTrophy(def.key, def.label, speciesByTier.get(def.key) || [], caughtSpeciesIds)
       );
     }
 
     const speciesByType = groupSpecies(TYPE_GROUPS, (s) => s.typeGroup);
     const typeTrophies = TYPE_GROUPS.map((def) =>
-      makeTrophy(def.label, speciesByType.get(def.id) || [], caughtSpeciesIds)
+      makeTrophy(def.key, def.label, speciesByType.get(def.id) || [], caughtSpeciesIds)
     );
 
     const speciesByHabitat = groupSpecies(HABITAT_GROUPS, (s) => s.habitat);
     const habitatTrophies = HABITAT_GROUPS.map((def) =>
-      makeTrophy(def.label, speciesByHabitat.get(def.id) || [], caughtSpeciesIds)
+      makeTrophy(def.key, def.label, speciesByHabitat.get(def.id) || [], caughtSpeciesIds)
     );
 
     const speciesByMigration = groupSpecies(MIGRATION_GROUPS, (s) => s.migration);
     const migrationTrophies = MIGRATION_GROUPS.map((def) =>
-      makeTrophy(def.label, speciesByMigration.get(def.id) || [], caughtSpeciesIds)
+      makeTrophy(def.key, def.label, speciesByMigration.get(def.id) || [], caughtSpeciesIds)
     );
 
     const regularBirderTrophy = computeRegularBirderTrophy(sightings);
     const achievementTrophies = [
-      makeTrophy('Full Flock', SPECIES, caughtSpeciesIds),
+      makeTrophy('Full Flock', i18n.t('achievements.fullFlock'), SPECIES, caughtSpeciesIds),
       computeSharpEyeTrophy(sightings),
       regularBirderTrophy,
     ];
@@ -114,38 +121,38 @@ export default function useTrophyCategories() {
     const categories = [
       {
         id: 'rarity',
-        label: 'Rarity',
-        description: 'Catch every species in a rarity tier.',
+        label: i18n.t('trophyCategories.rarity.label'),
+        description: i18n.t('trophyCategories.rarity.description'),
         trophies: rarityTrophies,
       },
       {
         id: 'types',
-        label: 'Bird Families',
-        description: 'Catch every species in a family or type.',
+        label: i18n.t('trophyCategories.types.label'),
+        description: i18n.t('trophyCategories.types.description'),
         trophies: typeTrophies,
       },
       {
         id: 'habitats',
-        label: 'Habitats',
-        description: 'Catch every species typically found in a habitat.',
+        label: i18n.t('trophyCategories.habitats.label'),
+        description: i18n.t('trophyCategories.habitats.description'),
         trophies: habitatTrophies,
       },
       {
         id: 'migration',
-        label: 'Migration',
-        description: 'Catch every species with a given migratory pattern.',
+        label: i18n.t('trophyCategories.migration.label'),
+        description: i18n.t('trophyCategories.migration.description'),
         trophies: migrationTrophies,
       },
       {
         id: 'achievements',
-        label: 'Achievements',
-        description: 'Milestones for how you use the app, not just what you catch.',
+        label: i18n.t('trophyCategories.achievements.label'),
+        description: i18n.t('trophyCategories.achievements.description'),
         trophies: achievementTrophies,
       },
       {
         id: 'milestones',
-        label: 'Milestones',
-        description: 'Special rewards for how far you\'ve come — each grants something other than Film.',
+        label: i18n.t('trophyCategories.milestones.label'),
+        description: i18n.t('trophyCategories.milestones.description'),
         trophies: milestoneTrophies,
       },
     ];

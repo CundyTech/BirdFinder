@@ -1,18 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, Image, Animated, PanResponder, Dimensions, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { useGetSpeciesInfoQuery } from '../services/birdInfoApi';
+import { formatSpeciesName } from '../domain/species';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
 const MAX_ROTATION_DEG = 10;
 const FLING_DURATION_MS = 220;
-
-function formatBirdName(className) {
-  if (!className) return '';
-  return className.replace(/^\d+\./, '').replace(/_/g, ' ');
-}
 
 // Reference photo for one candidate — its own small query so each card
 // fetches independently (RTK Query dedupes/caches per speciesId same as
@@ -36,6 +33,7 @@ function CandidateReferenceImage({ candidateId }) {
 // Unlike real Tinder, swipe direction here just cycles which candidate is
 // shown — confirming a match is a separate explicit button tap.
 export default function SwipeMatcher({ uri, candidates, onMatch }) {
+  const { t } = useTranslation();
   const [index, setIndex] = useState(0);
   const pan = useRef(new Animated.ValueXY()).current;
 
@@ -81,12 +79,12 @@ export default function SwipeMatcher({ uri, candidates, onMatch }) {
   ).current;
 
   const candidate = candidates[index];
-  const candidateName = formatBirdName(candidate.class);
+  const candidateName = formatSpeciesName(candidate.class);
 
   return (
     <View style={styles.swipeMatcherContainer}>
-      <Text style={styles.swipeMatcherTitle}>Which one looks right?</Text>
-      <Text style={styles.swipeMatcherHint}>Swipe to compare, then tap "It's a match!"</Text>
+      <Text style={styles.swipeMatcherTitle}>{t('components.swipeMatcher.title')}</Text>
+      <Text style={styles.swipeMatcherHint}>{t('components.swipeMatcher.hint')}</Text>
 
       <Animated.View
         {...panResponder.panHandlers}
@@ -98,11 +96,11 @@ export default function SwipeMatcher({ uri, candidates, onMatch }) {
         <View style={styles.swipeCardImageRow}>
           <View style={styles.swipeCardImageColumn}>
             <Image source={{ uri }} style={styles.swipeCardImage} />
-            <Text style={styles.swipeCardImageCaption}>Your photo</Text>
+            <Text style={styles.swipeCardImageCaption}>{t('components.swipeMatcher.yourPhoto')}</Text>
           </View>
           <View style={styles.swipeCardImageColumn}>
             <CandidateReferenceImage candidateId={candidate.class} />
-            <Text style={styles.swipeCardImageCaption}>Reference</Text>
+            <Text style={styles.swipeCardImageCaption}>{t('components.swipeMatcher.reference')}</Text>
           </View>
         </View>
         <Text style={styles.swipeCardName}>{candidateName}</Text>
@@ -113,7 +111,7 @@ export default function SwipeMatcher({ uri, candidates, onMatch }) {
           style={styles.swipeArrowButton}
           onPress={() => advance(-1)}
           accessibilityRole="button"
-          accessibilityLabel="Previous candidate"
+          accessibilityLabel={t('components.swipeMatcher.previousCandidate')}
         >
           <Feather name="chevron-left" size={22} color={styles.PALETTE.mutedText} />
         </TouchableOpacity>
@@ -122,17 +120,17 @@ export default function SwipeMatcher({ uri, candidates, onMatch }) {
           style={styles.matchButton}
           onPress={() => onMatch(candidate.class)}
           accessibilityRole="button"
-          accessibilityLabel={`Match with ${candidateName}`}
+          accessibilityLabel={t('components.swipeMatcher.matchWith', { name: candidateName })}
         >
           <MaterialCommunityIcons name="check-bold" size={18} color="#ffffff" />
-          <Text style={styles.matchButtonText}>It's a match!</Text>
+          <Text style={styles.matchButtonText}>{t('components.swipeMatcher.matchButton')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.swipeArrowButton}
           onPress={() => advance(1)}
           accessibilityRole="button"
-          accessibilityLabel="Next candidate"
+          accessibilityLabel={t('components.swipeMatcher.nextCandidate')}
         >
           <Feather name="chevron-right" size={22} color={styles.PALETTE.mutedText} />
         </TouchableOpacity>

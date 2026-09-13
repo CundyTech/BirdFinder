@@ -1,0 +1,33 @@
+{
+  "type": {
+    "Tits": "Tits",
+    "Crows & Corvids": "Crows & Corvids",
+    "Birds of Prey": "Birds of Prey",
+    "Owls": "Owls",
+    "Waterfowl": "Waterfowl",
+    "Gulls": "Gulls",
+    "Thrushes": "Thrushes",
+    "Finches": "Finches",
+    "Woodpeckers": "Woodpeckers",
+    "Wagtails": "Wagtails",
+    "Doves & Pigeons": "Doves & Pigeons",
+    "Warblers": "Warblers",
+    "Waterside Birds": "Waterside Birds",
+    "Waders": "Waders",
+    "Buntings": "Buntings",
+    "Swifts, Swallows & Martins": "Swifts, Swallows & Martins",
+    "Woodland Climbers": "Woodland Climbers",
+    "Gamebirds": "Gamebirds",
+    "Garden & Countryside Songbirds": "Garden & Countryside Songbirds"
+  },
+  "habitat": {
+    "Garden Birds": "Garden Birds",
+    "Woodland Birds": "Woodland Birds",
+    "Wetland & Coastal Birds": "Wetland & Coastal Birds",
+    "Farmland Birds": "Farmland Birds"
+  },
+  "migration": {
+    "Summer Visitors": "Summer Visitors",
+    "Year-round Residents": "Year-round Residents"
+  }
+}

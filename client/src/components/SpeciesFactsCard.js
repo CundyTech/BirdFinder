@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { useGetSpeciesInfoQuery } from '../services/birdInfoApi';
 import useSpeciesRarity from '../hooks/useSpeciesRarity';
@@ -10,6 +11,7 @@ import MigrationMap from './MigrationMap';
 import { BIRD_PROFILES, MIGRATION_ROUTES, DEEP_DIVE } from '../domain/birdProfiles';
 
 export default function SpeciesFactsCard({ speciesId, speciesName }) {
+  const { t } = useTranslation();
   const { data: info, isLoading, isError, refetch } = useGetSpeciesInfoQuery(speciesId, {
     skip: !speciesId,
   });
@@ -22,7 +24,7 @@ export default function SpeciesFactsCard({ speciesId, speciesName }) {
     return (
       <View style={styles.referenceLoading}>
         <ActivityIndicator size="small" color={styles.PALETTE.primary} />
-        <Text style={styles.referenceLoadingText}>Looking up species facts...</Text>
+        <Text style={styles.referenceLoadingText}>{t('components.speciesFactsCard.loadingFacts')}</Text>
       </View>
     );
   }
@@ -30,9 +32,9 @@ export default function SpeciesFactsCard({ speciesId, speciesName }) {
   if (isError) {
     return (
       <View style={styles.referenceErrorCard}>
-        <Text style={styles.referenceErrorText}>Couldn't load species facts.</Text>
-        <TouchableOpacity onPress={() => refetch()} accessibilityRole="button" accessibilityLabel="Retry loading species facts">
-          <Text style={styles.referenceErrorRetry}>Retry</Text>
+        <Text style={styles.referenceErrorText}>{t('components.speciesFactsCard.loadError')}</Text>
+        <TouchableOpacity onPress={() => refetch()} accessibilityRole="button" accessibilityLabel={t('components.speciesFactsCard.retryAccessibilityLabel')}>
+          <Text style={styles.referenceErrorRetry}>{t('common.retry')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -41,9 +43,14 @@ export default function SpeciesFactsCard({ speciesId, speciesName }) {
   if (!info) return null;
 
   const stats = [
-    info.family && { key: 'family', label: 'Family', value: info.family },
-    info.order && { key: 'order', label: 'Order', value: info.order },
-    info.conservationStatus && { key: 'status', label: 'Conservation status', value: info.conservationStatus, isStatus: true },
+    info.family && { key: 'family', label: t('components.speciesFactsCard.family'), value: info.family },
+    info.order && { key: 'order', label: t('components.speciesFactsCard.order'), value: info.order },
+    info.conservationStatus && {
+      key: 'status',
+      label: t('components.speciesFactsCard.conservationStatus'),
+      value: info.conservationStatus,
+      isStatus: true,
+    },
   ].filter(Boolean);
 
   const profile = BIRD_PROFILES[speciesId];
@@ -86,7 +93,7 @@ export default function SpeciesFactsCard({ speciesId, speciesName }) {
 
       {profile?.fact && (
         <View style={styles.funFactBox}>
-          <Text style={styles.funFactLabel}>Did you know?</Text>
+          <Text style={styles.funFactLabel}>{t('components.speciesFactsCard.didYouKnow')}</Text>
           <Text style={styles.funFactText}>{profile.fact}</Text>
         </View>
       )}
@@ -96,14 +103,14 @@ export default function SpeciesFactsCard({ speciesId, speciesName }) {
           <View style={styles.preyPredatorItem}>
             <View style={styles.preyPredatorLabelRow}>
               <MaterialCommunityIcons name="leaf" size={13} color={styles.PALETTE.mutedText} />
-              <Text style={styles.preyPredatorLabel}>Eats</Text>
+              <Text style={styles.preyPredatorLabel}>{t('components.speciesFactsCard.eats')}</Text>
             </View>
             <Text style={styles.preyPredatorValue}>{profile.prey}</Text>
           </View>
           <View style={styles.preyPredatorItem}>
             <View style={styles.preyPredatorLabelRow}>
               <MaterialCommunityIcons name="paw" size={13} color={styles.PALETTE.mutedText} />
-              <Text style={styles.preyPredatorLabel}>Eaten by</Text>
+              <Text style={styles.preyPredatorLabel}>{t('components.speciesFactsCard.eatenBy')}</Text>
             </View>
             <Text style={styles.preyPredatorValue}>{profile.predators}</Text>
           </View>
@@ -111,11 +118,11 @@ export default function SpeciesFactsCard({ speciesId, speciesName }) {
       )}
 
       <View style={styles.migrationSection}>
-        <Text style={styles.migrationSectionTitle}>Migration</Text>
+        <Text style={styles.migrationSectionTitle}>{t('components.speciesFactsCard.migration')}</Text>
         {migrationRoute ? (
           <MigrationMap breeding={migrationRoute.breeding} wintering={migrationRoute.wintering} />
         ) : (
-          <Text style={styles.migrationResidentText}>Resident in the UK all year round. Doesn't migrate.</Text>
+          <Text style={styles.migrationResidentText}>{t('components.speciesFactsCard.residentAllYear')}</Text>
         )}
       </View>
 
@@ -123,7 +130,7 @@ export default function SpeciesFactsCard({ speciesId, speciesName }) {
         <View style={styles.deepDiveBox}>
           <View style={styles.deepDiveLabelRow}>
             <MaterialCommunityIcons name="book-open-page-variant" size={13} color={styles.PALETTE.primary} />
-            <Text style={styles.deepDiveLabel}>Deep dive</Text>
+            <Text style={styles.deepDiveLabel}>{t('components.speciesFactsCard.deepDive')}</Text>
           </View>
           <Text style={styles.deepDiveText}>{deepDive}</Text>
         </View>

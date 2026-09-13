@@ -1,0 +1,37 @@
+{
+  "names": {
+    "freeReroll": "Free Reroll",
+    "streakProtection": "Streak Protection",
+    "deepDiveLore": "Deep-Dive Lore"
+  },
+  "actionText": {
+    "reroll_one": "+{{count}} token — skips the Film cost once each",
+    "reroll_other": "+{{count}} tokens — skips the Film cost once each",
+    "streakProtection_one": "+{{count}} token — covers one missed day each",
+    "streakProtection_other": "+{{count}} tokens — covers one missed day each",
+    "frame": "Tap to choose which frame to wear",
+    "deepDiveLore": "Extra lore unlocked on every species profile"
+  },
+  "frames": {
+    "floral-frame": {
+      "label": "Floral Frame",
+      "description": "Earned for saving 25 sightings."
+    },
+    "wood-frame": {
+      "label": "Wood Frame",
+      "description": "Earned for a 30-day streak."
+    },
+    "polaroid-frame": {
+      "label": "Polaroid Frame",
+      "description": "Earned for saving 50 sightings."
+    },
+    "calendar-frame": {
+      "label": "Calendar Frame",
+      "description": "Earned for sightings on 30 different days."
+    },
+    "baroque-frame": {
+      "label": "Baroque Frame",
+      "description": "Earned for completing the trophy cabinet."
+    }
+  }
+}

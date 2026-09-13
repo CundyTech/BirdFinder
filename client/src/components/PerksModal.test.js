@@ -25,14 +25,14 @@ jest.mock('@expo/vector-icons', () => ({
 }));
 
 const MILESTONES = [
-  { label: 'First Reroll', description: 'Save 10 sightings to earn a free reroll token.', reward: { type: 'reroll', amount: 1 } },
-  { label: 'Frequent Flyer', description: 'Save 25 sightings to unlock the Floral Frame.', reward: { type: 'frame', frameId: 'floral-frame' } },
-  { label: 'Century Club', description: 'Save 50 sightings to unlock the Polaroid Frame.', reward: { type: 'frame', frameId: 'polaroid-frame' } },
-  { label: 'Locked In', description: 'Reach a 7-day streak to earn a streak protection token.', reward: { type: 'streakProtection', amount: 1 } },
-  { label: 'Dedicated Birder', description: 'Reach a 30-day streak to unlock the Wood Frame.', reward: { type: 'frame', frameId: 'wood-frame' } },
-  { label: 'Field Notes', description: 'Log a sighting on 30 different days to unlock the Calendar Frame.', reward: { type: 'frame', frameId: 'calendar-frame' } },
-  { label: "Completionist's Notes", description: 'Complete every Rarity trophy to unlock deep-dive lore.', reward: { type: 'deepDiveLore' } },
-  { label: 'Full Cabinet', description: 'Unlock every other trophy to earn the Baroque Frame.', reward: { type: 'frame', frameId: 'baroque-frame' } },
+  { key: 'First Reroll', label: 'First Reroll', description: 'Save 10 sightings to earn a free reroll token.', reward: { type: 'reroll', amount: 1 } },
+  { key: 'Frequent Flyer', label: 'Frequent Flyer', description: 'Save 25 sightings to unlock the Floral Frame.', reward: { type: 'frame', frameId: 'floral-frame' } },
+  { key: 'Century Club', label: 'Century Club', description: 'Save 50 sightings to unlock the Polaroid Frame.', reward: { type: 'frame', frameId: 'polaroid-frame' } },
+  { key: 'Locked In', label: 'Locked In', description: 'Reach a 7-day streak to earn a streak protection token.', reward: { type: 'streakProtection', amount: 1 } },
+  { key: 'Dedicated Birder', label: 'Dedicated Birder', description: 'Reach a 30-day streak to unlock the Wood Frame.', reward: { type: 'frame', frameId: 'wood-frame' } },
+  { key: 'Field Notes', label: 'Field Notes', description: 'Log a sighting on 30 different days to unlock the Calendar Frame.', reward: { type: 'frame', frameId: 'calendar-frame' } },
+  { key: "Completionist's Notes", label: "Completionist's Notes", description: 'Complete every Rarity trophy to unlock deep-dive lore.', reward: { type: 'deepDiveLore' } },
+  { key: 'Full Cabinet', label: 'Full Cabinet', description: 'Unlock every other trophy to earn the Baroque Frame.', reward: { type: 'frame', frameId: 'baroque-frame' } },
 ];
 
 function makeStore(rewardsOverrides = {}) {

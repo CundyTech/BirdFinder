@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import SpeciesFactsCard from './SpeciesFactsCard';
 import SwipeMatcher from './SwipeMatcher';
 import ImageLightbox from './ImageLightbox';
 import { LOW_CONFIDENCE_THRESHOLD } from '../config';
+import { formatSpeciesName } from '../domain/species';
 
 export default function ResultCard({ uri, result, onSave }) {
+  const { t } = useTranslation();
   const [viewerOpen, setViewerOpen] = useState(false);
   // null until the user taps/matches a different candidate — falls back
   // to the top prediction so "Save" has a sensible default without
@@ -26,19 +29,13 @@ export default function ResultCard({ uri, result, onSave }) {
     return Math.max(...result.scores);
   };
 
-  const formatBirdName = (className) => {
-    if (!className) return '';
-    const name = className.replace(/^\d+\./, '').replace(/_/g, ' ');
-    return name;
-  };
-
   const topPredictions = Array.isArray(result.top_predictions) && result.top_predictions.length > 0
     ? result.top_predictions
     : [{ class: result.predicted_class, score: getMaxScore() }];
   const hasAlternatives = topPredictions.length > 1;
 
   const lightbox = (
-    <ImageLightbox uri={viewerOpen ? uri : null} label="Your photo, full screen" onClose={() => setViewerOpen(false)} />
+    <ImageLightbox uri={viewerOpen ? uri : null} label={t('common.photoFullScreen')} onClose={() => setViewerOpen(false)} />
   );
 
   // Everything below — title, confidence badge, reference card — reflects
@@ -50,10 +47,10 @@ export default function ResultCard({ uri, result, onSave }) {
       class: result.predicted_class,
       score: getMaxScore(),
     };
-  const selectedName = formatBirdName(effectiveSelectedClass);
+  const selectedName = formatSpeciesName(effectiveSelectedClass);
   const displayScorePercent = Number(((selectedCandidate.score || 0) * 100).toFixed(1));
   const isLowConfidence = displayScorePercent < LOW_CONFIDENCE_THRESHOLD;
-  const confidenceLabel = isLowConfidence ? 'Possible match' : 'Strong match';
+  const confidenceLabel = isLowConfidence ? t('components.resultCard.possibleMatch') : t('components.resultCard.strongMatch');
 
   const handleSave = () => {
     if (saved) return;
@@ -96,7 +93,7 @@ export default function ResultCard({ uri, result, onSave }) {
           style={styles.resultHeroImageWrapper}
           onPress={() => setViewerOpen(true)}
           accessibilityRole="imagebutton"
-          accessibilityLabel="View your photo larger"
+          accessibilityLabel={t('common.viewPhotoLarger')}
         >
           <Image source={{ uri }} style={styles.resultHeroImage} />
         </TouchableOpacity>
@@ -108,9 +105,9 @@ export default function ResultCard({ uri, result, onSave }) {
         <TouchableOpacity
           onPress={() => setMatched(false)}
           accessibilityRole="button"
-          accessibilityLabel="Not the right bird, choose again"
+          accessibilityLabel={t('components.resultCard.notRightChooseAgain')}
         >
-          <Text style={styles.swipeAgainLink}>Not right? Choose again</Text>
+          <Text style={styles.swipeAgainLink}>{t('components.resultCard.notRightLink')}</Text>
         </TouchableOpacity>
       )}
 
@@ -119,7 +116,11 @@ export default function ResultCard({ uri, result, onSave }) {
         onPress={handleSave}
         disabled={saved}
         accessibilityRole="button"
-        accessibilityLabel={saved ? 'Saved to sightings log' : `Save ${selectedName} to sightings log`}
+        accessibilityLabel={
+          saved
+            ? t('components.resultCard.savedAccessibilityLabel')
+            : t('components.resultCard.saveAccessibilityLabel', { name: selectedName })
+        }
       >
         <Feather
           name={saved ? 'check-circle' : 'bookmark'}
@@ -127,7 +128,9 @@ export default function ResultCard({ uri, result, onSave }) {
           color={saved ? styles.PALETTE.primary : '#ffffff'}
         />
         <Text style={[styles.saveButtonText, saved && styles.saveButtonTextSaved]}>
-          {saved ? `Saved as ${selectedName}` : `Save as ${selectedName}`}
+          {saved
+            ? t('components.resultCard.savedAs', { name: selectedName })
+            : t('components.resultCard.saveAs', { name: selectedName })}
         </Text>
       </TouchableOpacity>
 

@@ -1,0 +1,13 @@
+{
+  "backToSightingsLog": "Back to sightings log",
+  "deletePhotoTitle": "Delete photo?",
+  "deletePhotoMessage": "This removes your {{speciesName}} photo from the sightings log. This can't be undone.",
+  "delete": "Delete",
+  "photoCount_one": "{{count}} photo",
+  "photoCount_other": "{{count}} photos",
+  "sectionLabel": "Your snaps",
+  "emptyStateText": "No photos of this species yet.",
+  "viewPhotoOf": "View photo of {{speciesName}}",
+  "deletePhotoOf": "Delete this photo of {{speciesName}}",
+  "photoOfFullScreen": "Your photo of {{speciesName}}, full screen"
+}

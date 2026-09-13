@@ -1,0 +1,26 @@
+{
+  "Barn_Swallow": {
+    "breeding": "UK (Apr–Sep)",
+    "wintering": "Southern Africa"
+  },
+  "Common_Swift": {
+    "breeding": "UK (May–Aug)",
+    "wintering": "Central Africa"
+  },
+  "House_Martin": {
+    "breeding": "UK (Apr–Sep)",
+    "wintering": "Sub-Saharan Africa"
+  },
+  "Common_Chiffchaff": {
+    "breeding": "UK (Mar–Oct)",
+    "wintering": "Iberia & North Africa"
+  },
+  "Willow_Warbler": {
+    "breeding": "UK (Apr–Aug)",
+    "wintering": "Sub-Saharan Africa"
+  },
+  "Common_Blackcap": {
+    "breeding": "UK (Apr–Sep)",
+    "wintering": "Iberia & North Africa"
+  }
+}

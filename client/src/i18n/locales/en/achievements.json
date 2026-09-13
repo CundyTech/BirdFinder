@@ -1,0 +1,55 @@
+{
+  "fullFlock": "Full Flock",
+  "sharpEye": {
+    "label": "Sharp Eye",
+    "description": "Save {{target}} sightings with a strong-match identification ({{threshold}}%+ confidence).",
+    "unitLabel": "strong matches"
+  },
+  "regularBirder": {
+    "label": "Regular Birder",
+    "description": "Log at least one sighting on {{target}} different days.",
+    "unitLabel": "days"
+  },
+  "milestones": {
+    "firstReroll": {
+      "label": "First Reroll",
+      "description": "Save {{target}} sightings to earn a free reroll token (skips the Film cost once).",
+      "unitLabel": "sightings"
+    },
+    "frequentFlyer": {
+      "label": "Frequent Flyer",
+      "description": "Save {{target}} sightings to unlock the Floral Frame.",
+      "unitLabel": "sightings"
+    },
+    "centuryClub": {
+      "label": "Century Club",
+      "description": "Save {{target}} sightings to unlock the Polaroid Frame.",
+      "unitLabel": "sightings"
+    },
+    "lockedIn": {
+      "label": "Locked In",
+      "description": "Reach a {{target}}-day streak to earn a streak protection token (covers one missed day).",
+      "unitLabel": "day streak"
+    },
+    "dedicatedBirder": {
+      "label": "Dedicated Birder",
+      "description": "Reach a {{target}}-day streak to unlock the Wood Frame.",
+      "unitLabel": "day streak"
+    },
+    "fieldNotes": {
+      "label": "Field Notes",
+      "description": "Log a sighting on {{target}} different days to unlock the Calendar Frame.",
+      "unitLabel": "days"
+    },
+    "completionistsNotes": {
+      "label": "Completionist's Notes",
+      "description": "Complete every Rarity trophy to unlock deep-dive lore on every species profile.",
+      "unitLabel": "complete"
+    },
+    "fullCabinet": {
+      "label": "Full Cabinet",
+      "description": "Unlock every other trophy to earn the Baroque Frame.",
+      "unitLabel": "complete"
+    }
+  }
+}

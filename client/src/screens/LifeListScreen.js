@@ -2,11 +2,13 @@ import React, { useMemo } from 'react';
 import { SafeAreaView, ScrollView, View, Text, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import { Feather } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { SPECIES, SPECIES_COUNT } from '../domain/species';
 import SpeciesTile from '../components/SpeciesTile';
 
 export default function LifeListScreen({ onBack, onOpenSpecies }) {
+  const { t } = useTranslation();
   const sightings = useSelector((state) => state.lifeList.sightings);
 
   const bySpecies = useMemo(() => {
@@ -32,13 +34,13 @@ export default function LifeListScreen({ onBack, onOpenSpecies }) {
           style={styles.subHeaderBackButton}
           onPress={onBack}
           accessibilityRole="button"
-          accessibilityLabel="Back"
+          accessibilityLabel={t('common.back')}
         >
           <Feather name="chevron-left" size={22} color={styles.PALETTE.textOnDark} />
         </TouchableOpacity>
         <View style={styles.subHeaderTitleWrap}>
-          <Text style={styles.subHeaderTitle}>My Sightings Log</Text>
-          <Text style={styles.subHeaderSubtitle}>{caughtCount} / {SPECIES_COUNT} species spotted</Text>
+          <Text style={styles.subHeaderTitle}>{t('lifeList.title')}</Text>
+          <Text style={styles.subHeaderSubtitle}>{t('lifeList.subtitle', { count: caughtCount, total: SPECIES_COUNT })}</Text>
         </View>
       </View>
 

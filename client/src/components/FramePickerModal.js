@@ -2,11 +2,13 @@ import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { FRAMES } from '../domain/frames';
 import { equipFrame } from '../store/rewardsSlice';
 
 export default function FramePickerModal({ visible, onClose }) {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const ownedFrameIds = useSelector((state) => state.rewards.ownedFrameIds);
   const equippedFrameId = useSelector((state) => state.rewards.equippedFrameId);
@@ -15,10 +17,8 @@ export default function FramePickerModal({ visible, onClose }) {
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.filmModalBackdrop}>
         <View style={styles.filmModalCard}>
-          <Text style={styles.filmModalTitle}>Frames</Text>
-          <Text style={styles.filmModalSubtitle}>
-            Earned from milestones. Pick one to frame your photos when viewing them full-screen.
-          </Text>
+          <Text style={styles.filmModalTitle}>{t('modals.framePicker.title')}</Text>
+          <Text style={styles.filmModalSubtitle}>{t('modals.framePicker.subtitle')}</Text>
 
           {FRAMES.map((frame) => {
             const owned = ownedFrameIds.includes(frame.id);
@@ -53,7 +53,7 @@ export default function FramePickerModal({ visible, onClose }) {
           })}
 
           <TouchableOpacity style={styles.filmModalClose} onPress={onClose}>
-            <Text style={styles.filmModalCloseText}>Close</Text>
+            <Text style={styles.filmModalCloseText}>{t('common.close')}</Text>
           </TouchableOpacity>
         </View>
       </View>

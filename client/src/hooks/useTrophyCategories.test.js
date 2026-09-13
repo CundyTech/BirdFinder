@@ -12,16 +12,18 @@ describe('groupSpecies', () => {
     expect(result.get('even').every((s) => idOf.get(s.id) === 'even')).toBe(true);
   });
 
-  // Regression test: RARITY_TIERS entries only have {label, pips}, no id.
-  // groupSpecies used to key its lookup map by group.id unconditionally,
-  // so every rarity tier's key came out `undefined` and every species
-  // silently vanished into a bucket nothing ever read from — every rarity
-  // trophy showed 0/0 instead of its real count.
-  it('falls back to label as the key when group defs have no id (RARITY_TIERS shape)', () => {
-    const groupDefs = [{ label: 'Alpha' }, { label: 'Beta' }];
-    const labelOf = new Map(SPECIES.map((s, i) => [s.id, i % 2 === 0 ? 'Alpha' : 'Beta']));
+  // Regression test: RARITY_TIERS entries only have {key, label, pips}, no
+  // id. groupSpecies used to key its lookup map by group.id, falling back to
+  // group.label when absent — so every rarity tier's key came out
+  // `undefined` and every species silently vanished into a bucket nothing
+  // ever read from — every rarity trophy showed 0/0 instead of its real
+  // count. It now falls back to `key` instead of `label`, since `label` is
+  // translated (see species.js/rarity.js) and unsafe to use as a lookup key.
+  it('falls back to key as the map key when group defs have no id (RARITY_TIERS shape)', () => {
+    const groupDefs = [{ key: 'Alpha', label: 'Alpha (translated)' }, { key: 'Beta', label: 'Beta (translated)' }];
+    const keyOf = new Map(SPECIES.map((s, i) => [s.id, i % 2 === 0 ? 'Alpha' : 'Beta']));
 
-    const result = groupSpecies(groupDefs, (s) => labelOf.get(s.id));
+    const result = groupSpecies(groupDefs, (s) => keyOf.get(s.id));
 
     expect(result.has(undefined)).toBe(false);
     expect(result.get('Alpha').length).toBeGreaterThan(0);
@@ -41,7 +43,7 @@ describe('makeTrophy', () => {
     const species = SPECIES.slice(0, 3);
     const caughtSpeciesIds = new Set([species[0].id, species[1].id]);
 
-    const trophy = makeTrophy('Test', species, caughtSpeciesIds);
+    const trophy = makeTrophy('Test', 'Test', species, caughtSpeciesIds);
 
     expect(trophy.total).toBe(3);
     expect(trophy.caughtCount).toBe(2);
@@ -52,13 +54,13 @@ describe('makeTrophy', () => {
     const species = SPECIES.slice(0, 2);
     const caughtSpeciesIds = new Set(species.map((s) => s.id));
 
-    const trophy = makeTrophy('Test', species, caughtSpeciesIds);
+    const trophy = makeTrophy('Test', 'Test', species, caughtSpeciesIds);
 
     expect(trophy.unlocked).toBe(true);
   });
 
   it('never unlocks an empty group', () => {
-    const trophy = makeTrophy('Empty', [], new Set());
+    const trophy = makeTrophy('Empty', 'Empty', [], new Set());
     expect(trophy.total).toBe(0);
     expect(trophy.unlocked).toBe(false);
   });
@@ -68,7 +70,7 @@ describe('makeTrophy', () => {
 describe('forceUnlocked', () => {
   it('unlocks a species trophy and fills in every species as caught', () => {
     const species = SPECIES.slice(0, 3);
-    const trophy = makeTrophy('Test', species, new Set());
+    const trophy = makeTrophy('Test', 'Test', species, new Set());
 
     const forced = forceUnlocked(trophy);
 
@@ -78,7 +80,7 @@ describe('forceUnlocked', () => {
   });
 
   it('never unlocks an empty species group, even when forced', () => {
-    const trophy = makeTrophy('Empty', [], new Set());
+    const trophy = makeTrophy('Empty', 'Empty', [], new Set());
     expect(forceUnlocked(trophy).unlocked).toBe(false);
   });
 

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, ScrollView, Alert, DevSettings } from 'react-native';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from '../styles';
 import useTrophyCategories from '../hooks/useTrophyCategories';
@@ -24,13 +25,14 @@ import FramePickerModal from './FramePickerModal';
 // every frame, locked ones greyed) is more useful than five near-identical
 // "tap to choose which frame to wear" entries.
 export default function PerksModal({ visible, onClose }) {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const [showFramePicker, setShowFramePicker] = useState(false);
   const categories = useTrophyCategories();
   const claimedKeys = useSelector((state) => state.rewards.claimedMilestoneKeys);
   const ownedFrameIds = useSelector((state) => state.rewards.ownedFrameIds);
   const milestones = categories.find((c) => c.id === 'milestones')?.trophies || [];
-  const otherPerks = milestones.filter((t) => t.reward?.type !== 'frame');
+  const otherPerks = milestones.filter((trophy) => trophy.reward?.type !== 'frame');
   // Counts only ids that still match a known frame — ownedFrameIds can carry
   // a stale id from a frame that no longer exists (e.g. renamed during
   // development), which FramePickerModal already ignores by construction
@@ -47,18 +49,18 @@ export default function PerksModal({ visible, onClose }) {
   // {label, reward} regardless of live progress, so no separate lookup is
   // needed to grant them all.
   const handleUnlockAllPerks = () => {
-    const allMilestones = milestones.map((t) => ({ key: `milestones:${t.label}`, reward: t.reward }));
+    const allMilestones = milestones.map((milestone) => ({ key: `milestones:${milestone.key}`, reward: milestone.reward }));
     dispatch(grantMilestoneRewards(allMilestones));
   };
 
   const handleWipeAllData = () => {
     Alert.alert(
-      'Wipe all data?',
-      'Clears every saved sighting, streak, Film balance, and perk. This cannot be undone.',
+      t('modals.perks.wipeConfirmTitle'),
+      t('modals.perks.wipeConfirmMessage'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Wipe',
+          text: t('modals.perks.wipe'),
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.clear();
@@ -74,8 +76,8 @@ export default function PerksModal({ visible, onClose }) {
       <Modal visible={visible} transparent animationType="fade" onRequestClose={close}>
         <View style={styles.filmModalBackdrop}>
           <View style={styles.filmModalCard}>
-            <Text style={styles.filmModalTitle}>Perks</Text>
-            <Text style={styles.filmModalSubtitle}>What you've earned from milestones.</Text>
+            <Text style={styles.filmModalTitle}>{t('modals.perks.title')}</Text>
+            <Text style={styles.filmModalSubtitle}>{t('modals.perks.subtitle')}</Text>
 
             <ScrollView style={{ maxHeight: 420 }} showsVerticalScrollIndicator={false}>
               <TouchableOpacity
@@ -83,7 +85,7 @@ export default function PerksModal({ visible, onClose }) {
                 onPress={() => setShowFramePicker(true)}
                 activeOpacity={0.85}
                 accessibilityRole="button"
-                accessibilityLabel={`Frames, ${framesOwnedCount} of ${FRAMES.length} unlocked`}
+                accessibilityLabel={t('modals.perks.framesAccessibilityLabel', { owned: framesOwnedCount, total: FRAMES.length })}
               >
                 <View
                   style={[
@@ -98,22 +100,22 @@ export default function PerksModal({ visible, onClose }) {
                   />
                 </View>
                 <View style={styles.filmModalOptionText}>
-                  <Text style={styles.filmModalOptionTitle}>Frames</Text>
+                  <Text style={styles.filmModalOptionTitle}>{t('modals.perks.framesTitle')}</Text>
                   <Text style={styles.filmModalOptionSub}>
-                    {framesOwnedCount} of {FRAMES.length} unlocked — tap to choose which one to wear
+                    {t('modals.perks.framesSub', { owned: framesOwnedCount, total: FRAMES.length })}
                   </Text>
                 </View>
                 <Feather name="chevron-right" size={18} color={styles.PALETTE.mutedText} />
               </TouchableOpacity>
 
               {otherPerks.map((trophy) => {
-                const unlocked = claimedKeys.includes(`milestones:${trophy.label}`);
+                const unlocked = claimedKeys.includes(`milestones:${trophy.key}`);
                 const display = rewardDisplay(trophy.reward);
                 return (
                   <View
-                    key={trophy.label}
+                    key={trophy.key}
                     style={[styles.filmModalOption, !unlocked && styles.filmModalOptionDisabled]}
-                    accessibilityLabel={`${rewardName(trophy.reward, trophy.label)}, ${unlocked ? 'unlocked' : 'locked'}`}
+                    accessibilityLabel={`${rewardName(trophy.reward, trophy.label)}, ${unlocked ? t('common.unlocked') : t('common.locked')}`}
                   >
                     <View
                       style={[
@@ -139,14 +141,14 @@ export default function PerksModal({ visible, onClose }) {
 
               {__DEV__ && (
                 <View>
-                  <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Debug (this build only)</Text>
+                  <Text style={[styles.sectionLabel, { marginTop: 16 }]}>{t('modals.perks.debugSectionLabel')}</Text>
                   <TouchableOpacity style={styles.filmModalOption} onPress={handleUnlockAllPerks} activeOpacity={0.85}>
                     <View style={[styles.filmModalOptionIcon, { backgroundColor: 'rgba(245, 158, 11, 0.16)' }]}>
                       <MaterialCommunityIcons name="star-shooting-outline" size={22} color={styles.PALETTE.accent} />
                     </View>
                     <View style={styles.filmModalOptionText}>
-                      <Text style={styles.filmModalOptionTitle}>Unlock All Perks</Text>
-                      <Text style={styles.filmModalOptionSub}>Grants every milestone reward immediately</Text>
+                      <Text style={styles.filmModalOptionTitle}>{t('modals.perks.unlockAllPerksTitle')}</Text>
+                      <Text style={styles.filmModalOptionSub}>{t('modals.perks.unlockAllPerksSub')}</Text>
                     </View>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.filmModalOption} onPress={handleWipeAllData} activeOpacity={0.85}>
@@ -154,8 +156,8 @@ export default function PerksModal({ visible, onClose }) {
                       <MaterialCommunityIcons name="delete-outline" size={22} color={styles.PALETTE.danger} />
                     </View>
                     <View style={styles.filmModalOptionText}>
-                      <Text style={styles.filmModalOptionTitle}>Wipe All Data</Text>
-                      <Text style={styles.filmModalOptionSub}>Clears sightings, streaks, Film, and perks — reloads the app</Text>
+                      <Text style={styles.filmModalOptionTitle}>{t('modals.perks.wipeAllDataTitle')}</Text>
+                      <Text style={styles.filmModalOptionSub}>{t('modals.perks.wipeAllDataSub')}</Text>
                     </View>
                   </TouchableOpacity>
                 </View>
@@ -163,7 +165,7 @@ export default function PerksModal({ visible, onClose }) {
             </ScrollView>
 
             <TouchableOpacity style={styles.filmModalClose} onPress={close}>
-              <Text style={styles.filmModalCloseText}>Close</Text>
+              <Text style={styles.filmModalCloseText}>{t('common.close')}</Text>
             </TouchableOpacity>
           </View>
         </View>

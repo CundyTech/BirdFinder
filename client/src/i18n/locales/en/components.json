@@ -1,0 +1,78 @@
+{
+  "header": {
+    "frameAccessibilityLabel": "{{frameLabel}} frame, tap to view perks",
+    "viewPerks": "View perks",
+    "brandTitle": "Bird Finder UK",
+    "brandSubtitle": "UK bird identification",
+    "checkingConnection": "Checking connection...",
+    "cantReachServer": "Can't reach the server, tap to retry"
+  },
+  "loadingCard": {
+    "usingFilm": "Using 1 Film for this ID",
+    "usingReroll": "Using 1 reroll token for this ID",
+    "freeViaAd": "Free — covered by your ad",
+    "eyebrow": "Bird recognition",
+    "scanning": "Scanning image...",
+    "matchingPatterns": "Matching feather patterns"
+  },
+  "resultCard": {
+    "possibleMatch": "Possible match",
+    "strongMatch": "Strong match",
+    "notRightChooseAgain": "Not the right bird, choose again",
+    "notRightLink": "Not right? Choose again",
+    "savedAccessibilityLabel": "Saved to sightings log",
+    "saveAccessibilityLabel": "Save {{name}} to sightings log",
+    "savedAs": "Saved as {{name}}",
+    "saveAs": "Save as {{name}}"
+  },
+  "swipeMatcher": {
+    "title": "Which one looks right?",
+    "hint": "Swipe to compare, then tap \"It's a match!\"",
+    "yourPhoto": "Your photo",
+    "reference": "Reference",
+    "previousCandidate": "Previous candidate",
+    "matchWith": "Match with {{name}}",
+    "matchButton": "It's a match!",
+    "nextCandidate": "Next candidate"
+  },
+  "speciesFactsCard": {
+    "loadingFacts": "Looking up species facts...",
+    "loadError": "Couldn't load species facts.",
+    "retryAccessibilityLabel": "Retry loading species facts",
+    "family": "Family",
+    "order": "Order",
+    "conservationStatus": "Conservation status",
+    "didYouKnow": "Did you know?",
+    "eats": "Eats",
+    "eatenBy": "Eaten by",
+    "migration": "Migration",
+    "residentAllYear": "Resident in the UK all year round. Doesn't migrate.",
+    "deepDive": "Deep dive"
+  },
+  "imageLightbox": {
+    "closeImageViewer": "Close image viewer",
+    "fullScreenPhoto": "Full-screen photo"
+  },
+  "migrationMap": {
+    "breeds": "Breeds",
+    "winters": "Winters"
+  },
+  "placeholderCard": {
+    "title": "Ready to Identify Birds?",
+    "subtitle": "Take a photo and our model will identify the species. Works best with clear photos."
+  },
+  "actionPanel": {
+    "takePhoto": "Take Photo"
+  },
+  "rarityMeter": {
+    "ukRarity": "UK rarity"
+  },
+  "trophyCard": {
+    "accessibilityLabel": "{{label}} trophy, {{progressText}}, {{action}} details",
+    "collapse": "collapse",
+    "expand": "expand",
+    "progressBehavior": "{{current}} / {{target}} {{unitLabel}}",
+    "progressSpecies": "{{current}} / {{target}} caught",
+    "viewSightingSpecies": "View this sighting's species"
+  }
+}

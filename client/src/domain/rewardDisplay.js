@@ -1,3 +1,4 @@
+import i18n from '../i18n';
 import styles from '../styles';
 import { getFrame } from './frames';
 
@@ -28,9 +29,9 @@ export function rewardDisplay(reward) {
 export function rewardName(reward, fallback) {
   if (!reward) return fallback;
   if (reward.type === 'frame') return getFrame(reward.frameId)?.label || fallback;
-  if (reward.type === 'reroll') return 'Free Reroll';
-  if (reward.type === 'streakProtection') return 'Streak Protection';
-  if (reward.type === 'deepDiveLore') return 'Deep-Dive Lore';
+  if (reward.type === 'reroll') return i18n.t('rewards.names.freeReroll');
+  if (reward.type === 'streakProtection') return i18n.t('rewards.names.streakProtection');
+  if (reward.type === 'deepDiveLore') return i18n.t('rewards.names.deepDiveLore');
   return fallback;
 }
 
@@ -39,12 +40,12 @@ export function rewardName(reward, fallback) {
 export function rewardActionText(reward) {
   if (!reward) return null;
   if (reward.type === 'reroll') {
-    return `+${reward.amount} token${reward.amount === 1 ? '' : 's'} — skips the Film cost once each`;
+    return i18n.t('rewards.actionText.reroll', { count: reward.amount });
   }
   if (reward.type === 'streakProtection') {
-    return `+${reward.amount} token${reward.amount === 1 ? '' : 's'} — covers one missed day each`;
+    return i18n.t('rewards.actionText.streakProtection', { count: reward.amount });
   }
-  if (reward.type === 'frame') return 'Tap to choose which frame to wear';
-  if (reward.type === 'deepDiveLore') return 'Extra lore unlocked on every species profile';
+  if (reward.type === 'frame') return i18n.t('rewards.actionText.frame');
+  if (reward.type === 'deepDiveLore') return i18n.t('rewards.actionText.deepDiveLore');
   return null;
 }

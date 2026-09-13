@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import Svg, { Path, Circle } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 
 // Deliberately schematic, not a real projected map — just a curved path
@@ -8,6 +9,7 @@ import styles from '../styles';
 // dependency) instead of a native maps library, which would need a custom
 // dev client and break Expo Go.
 export default function MigrationMap({ breeding, wintering }) {
+  const { t } = useTranslation();
   return (
     <View style={styles.migrationMapCard}>
       <Svg width="100%" height={90} viewBox="0 0 300 90">
@@ -25,14 +27,14 @@ export default function MigrationMap({ breeding, wintering }) {
         <View style={styles.migrationLabelItem}>
           <View style={[styles.migrationDot, { backgroundColor: styles.PALETTE.primary }]} />
           <View>
-            <Text style={styles.migrationLabelCaption}>Breeds</Text>
+            <Text style={styles.migrationLabelCaption}>{t('components.migrationMap.breeds')}</Text>
             <Text style={styles.migrationLabelText}>{breeding}</Text>
           </View>
         </View>
         <View style={styles.migrationLabelItem}>
           <View style={[styles.migrationDot, { backgroundColor: styles.PALETTE.accent }]} />
           <View>
-            <Text style={styles.migrationLabelCaption}>Winters</Text>
+            <Text style={styles.migrationLabelCaption}>{t('components.migrationMap.winters')}</Text>
             <Text style={styles.migrationLabelText}>{wintering}</Text>
           </View>
         </View>

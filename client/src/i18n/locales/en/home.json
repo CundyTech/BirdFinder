@@ -1,0 +1,22 @@
+{
+  "cameraAccessNeededTitle": "Camera access needed",
+  "cameraAccessNeededMessage": "Camera access is currently blocked. Enable it in Settings to identify birds by photo.",
+  "openSettings": "Open Settings",
+  "cameraPermissionRequiredTitle": "Camera permission required",
+  "cameraPermissionRequiredMessage": "We need camera access to take a photo of the bird.",
+  "genericError": "Something went wrong. Please try again.",
+  "healthErrorPrefix": "HTTP",
+  "uploadErrorPrefix": "Server error",
+  "heroTitle": "Identify a Bird",
+  "heroSubtitle": "Point your camera at a bird and we'll tell you what it is.",
+  "heroButtonText": "Take a Photo",
+  "sectionLabel": "Your collection",
+  "trophyCabinetTileTitle": "Trophy Cabinet",
+  "trophyCabinetTileSub": "Collect rarity trophies",
+  "lifeListTileTitle": "My Sightings Log",
+  "lifeListTileSub": "Your recorded sightings",
+  "errorTitle": "Couldn't identify that photo",
+  "newPhoto": "New Photo",
+  "identifyAnotherBird": "Identify Another Bird",
+  "backToHome": "Back to Home"
+}

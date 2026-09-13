@@ -2,12 +2,14 @@ import React from 'react';
 import { Modal, View, Text, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import styles from '../styles';
 import { useFilmRewardedAd } from '../hooks/useFilmRewardedAd';
 import { usePurchases } from '../hooks/usePurchases';
 import { grantAdReward } from '../store/filmSlice';
 
 export default function OutOfFilmModal({ visible, onClose, rerollTokens = 0, onUseReroll }) {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { isLoaded: adLoaded, showAd } = useFilmRewardedAd(() => dispatch(grantAdReward()));
   const { product, purchasing, purchaseUnlock } = usePurchases();
@@ -16,10 +18,8 @@ export default function OutOfFilmModal({ visible, onClose, rerollTokens = 0, onU
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.filmModalBackdrop}>
         <View style={styles.filmModalCard}>
-          <Text style={styles.filmModalTitle}>Out of Film</Text>
-          <Text style={styles.filmModalSubtitle}>
-            You're out of Film for now. Grab more below, or come back tomorrow for a free refill.
-          </Text>
+          <Text style={styles.filmModalTitle}>{t('modals.outOfFilm.title')}</Text>
+          <Text style={styles.filmModalSubtitle}>{t('modals.outOfFilm.subtitle')}</Text>
 
           {rerollTokens > 0 && (
             <TouchableOpacity style={styles.filmModalOption} onPress={onUseReroll} activeOpacity={0.85}>
@@ -27,9 +27,9 @@ export default function OutOfFilmModal({ visible, onClose, rerollTokens = 0, onU
                 <MaterialCommunityIcons name="dice-multiple-outline" size={22} color={styles.PALETTE.primary} />
               </View>
               <View style={styles.filmModalOptionText}>
-                <Text style={styles.filmModalOptionTitle}>Use a free reroll</Text>
+                <Text style={styles.filmModalOptionTitle}>{t('modals.outOfFilm.useReroll')}</Text>
                 <Text style={styles.filmModalOptionSub}>
-                  {rerollTokens} reroll token{rerollTokens === 1 ? '' : 's'} available, earned from milestones
+                  {t('modals.outOfFilm.rerollTokensAvailable', { count: rerollTokens })}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -45,9 +45,9 @@ export default function OutOfFilmModal({ visible, onClose, rerollTokens = 0, onU
               <MaterialCommunityIcons name="play-circle-outline" size={22} color={styles.PALETTE.primary} />
             </View>
             <View style={styles.filmModalOptionText}>
-              <Text style={styles.filmModalOptionTitle}>Watch an ad</Text>
+              <Text style={styles.filmModalOptionTitle}>{t('modals.outOfFilm.watchAd')}</Text>
               <Text style={styles.filmModalOptionSub}>
-                {adLoaded ? '+5 Film, free' : 'Loading ad...'}
+                {adLoaded ? t('modals.outOfFilm.adFreeFilm') : t('common.loadingAd')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -62,15 +62,17 @@ export default function OutOfFilmModal({ visible, onClose, rerollTokens = 0, onU
               <MaterialCommunityIcons name="infinity" size={22} color={styles.PALETTE.accent} />
             </View>
             <View style={styles.filmModalOptionText}>
-              <Text style={styles.filmModalOptionTitle}>Unlock unlimited Film</Text>
+              <Text style={styles.filmModalOptionTitle}>{t('modals.outOfFilm.unlockUnlimited')}</Text>
               <Text style={styles.filmModalOptionSub}>
-                {purchasing ? 'Processing...' : `One-time purchase, removes ads too${product?.localizedPrice ? ` — ${product.localizedPrice}` : ''}`}
+                {purchasing
+                  ? t('modals.outOfFilm.processing')
+                  : t('modals.outOfFilm.unlockSub', { price: product?.localizedPrice ? ` — ${product.localizedPrice}` : '' })}
               </Text>
             </View>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.filmModalClose} onPress={onClose}>
-            <Text style={styles.filmModalCloseText}>Maybe later</Text>
+            <Text style={styles.filmModalCloseText}>{t('modals.outOfFilm.maybeLater')}</Text>
           </TouchableOpacity>
         </View>
       </View>
