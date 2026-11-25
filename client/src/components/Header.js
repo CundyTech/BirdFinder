@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, Image, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import { MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -7,11 +7,9 @@ import useAppStyles from '../hooks/useAppStyles';
 import { getFrame } from '../domain/frames';
 import PerksModal from './PerksModal';
 
-export default function Header({ apiHealth, healthLoading, onRetryHealth, onOpenSettings }) {
+export default function Header({ onOpenSettings }) {
   const { t } = useTranslation();
   const styles = useAppStyles();
-  const isHealthy = apiHealth?.status === 'healthy';
-  const isUnhealthy = apiHealth?.status === 'unhealthy';
   const filmBalance = useSelector((state) => state.film.balance);
   const unlockedForever = useSelector((state) => state.premium.unlockedForever);
   const currentStreak = useSelector((state) => state.streak.currentStreak);
@@ -67,9 +65,6 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth, onOpen
             <Text style={styles.filmBadgeText}>{filmBalance}</Text>
           )}
         </View>
-        {!healthLoading && apiHealth && (
-          <View style={[styles.statusIndicator, isHealthy ? styles.statusHealthy : styles.statusUnhealthy]} />
-        )}
         <TouchableOpacity
           onPress={onOpenSettings}
           activeOpacity={0.7}
@@ -82,19 +77,6 @@ export default function Header({ apiHealth, healthLoading, onRetryHealth, onOpen
       </View>
 
       <PerksModal visible={showPerks} onClose={() => setShowPerks(false)} />
-
-      {healthLoading && (
-        <View style={styles.healthBanner}>
-          <ActivityIndicator size="small" color={styles.PALETTE.mutedText} />
-          <Text style={styles.healthBannerText}>{t('components.header.checkingConnection')}</Text>
-        </View>
-      )}
-
-      {!healthLoading && isUnhealthy && (
-        <TouchableOpacity style={styles.healthBannerError} onPress={onRetryHealth}>
-          <Text style={styles.healthBannerErrorText}>{t('components.header.cantReachServer')}</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 }

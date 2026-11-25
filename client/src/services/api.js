@@ -22,14 +22,7 @@ export const api = createApi({
     checkHealth: builder.query({
       query: () => 'health',
     }),
-    uploadPhoto: builder.mutation({
-      query: (formData) => ({
-        url: 'predict',
-        method: 'POST',
-        body: formData,
-      }),
-    }),
   }),
 });
 
-export const { useCheckHealthQuery, useUploadPhotoMutation } = api;
+export const { useCheckHealthQuery } = api;
