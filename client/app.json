@@ -34,7 +34,8 @@
         }
       ],
       "./plugins/withIapStoreFlavor.js",
-      "expo-localization"
+      "expo-localization",
+      "onnxruntime-react-native"
     ],
     "android": {
       "package": "com.cundytech.birdfinder",

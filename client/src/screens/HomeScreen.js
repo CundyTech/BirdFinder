@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import useAppStyles from '../hooks/useAppStyles';
 import { MIN_LOADING_DURATION_MS } from '../config';
 import i18n from '../i18n';
-import { useCheckHealthQuery, useUploadPhotoMutation } from '../services/api';
+import { predictBirdOnDevice, warmLocalInference } from '../services/localInference';
 import { recordSighting } from '../store/lifeListSlice';
 import { spendFilm } from '../store/filmSlice';
 import { recordActivity } from '../store/streakSlice';
@@ -22,13 +22,6 @@ import ResultCard from '../components/ResultCard';
 import BirdPatternBackground from '../components/BirdPatternBackground';
 import OutOfFilmModal from '../components/OutOfFilmModal';
 import FilmChoiceModal from '../components/FilmChoiceModal';
-
-// fetchBaseQuery's error shape: { status: <http code> } for a bad response,
-// { status: 'FETCH_ERROR', error: <message> } for a network failure.
-function describeQueryError(err, httpPrefix) {
-    if (typeof err?.status === 'number') return `${httpPrefix} (${err.status})`;
-    return err?.error || i18n.t('home.genericError');
-}
 
 export default function HomeScreen({ onOpenLifeList, onOpenTrophies, onOpenSettings }) {
     const { t } = useTranslation();
@@ -74,41 +67,41 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies, onOpenSetti
         }
     }, [showOutOfFilm, unlockedForever, filmBalance]);
 
-    const { data: healthData, error: healthQueryError, isFetching: healthLoading, refetch: refetchHealth } = useCheckHealthQuery();
-    const [uploadPhoto] = useUploadPhotoMutation();
-
-    const apiHealth = healthQueryError
-        ? { status: 'unhealthy', error: describeQueryError(healthQueryError, t('home.healthErrorPrefix')) }
-        : healthData
-            ? { status: 'healthy', ...healthData }
-            : null;
-
     const openCamera = async () => {
-        const permission = await ImagePicker.requestCameraPermissionsAsync();
-        if (permission.status !== 'granted') {
-            if (permission.canAskAgain === false) {
-                Alert.alert(
-                    t('home.cameraAccessNeededTitle'),
-                    t('home.cameraAccessNeededMessage'),
-                    [
-                        { text: t('common.cancel'), style: 'cancel' },
-                        { text: t('home.openSettings'), onPress: () => Linking.openSettings() },
-                    ]
-                );
-            } else {
-                Alert.alert(t('home.cameraPermissionRequiredTitle'), t('home.cameraPermissionRequiredMessage'));
+        try {
+            let permission = await ImagePicker.getCameraPermissionsAsync();
+            if (permission.status !== 'granted') {
+                permission = await ImagePicker.requestCameraPermissionsAsync();
             }
-            return;
-        }
-        let res = await ImagePicker.launchCameraAsync({
-            base64: false,
-            quality: 0.8,
-        });
+            if (permission.status !== 'granted') {
+                if (permission.canAskAgain === false) {
+                    Alert.alert(
+                        t('home.cameraAccessNeededTitle'),
+                        t('home.cameraAccessNeededMessage'),
+                        [
+                            { text: t('common.cancel'), style: 'cancel' },
+                            { text: t('home.openSettings'), onPress: () => Linking.openSettings() },
+                        ]
+                    );
+                } else {
+                    Alert.alert(t('home.cameraPermissionRequiredTitle'), t('home.cameraPermissionRequiredMessage'));
+                }
+                return;
+            }
 
-        if (!res.canceled) {
-            const uri = res.assets[0].uri;
-            setImageUri(uri);
-            uploadImage(uri);
+            const result = await ImagePicker.launchCameraAsync({
+                base64: false,
+                quality: 0.8,
+            });
+
+            if (!result.canceled) {
+                const uri = result.assets[0].uri;
+                setImageUri(uri);
+                uploadImage(uri);
+            }
+        } catch (error) {
+            console.error('Could not open the camera:', error);
+            Alert.alert(t('home.cameraPermissionRequiredTitle'), error?.message || t('home.genericError'));
         }
     };
 
@@ -142,6 +135,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies, onOpenSetti
 
     const handleUseFilm = async () => {
         setShowFilmChoice(false);
+        await new Promise((resolve) => setTimeout(resolve, 350));
         await openCamera();
     };
 
@@ -160,18 +154,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies, onOpenSetti
         setError(null);
         const startedAt = Date.now();
         try {
-            const filename = uri.split('/').pop();
-            const match = /(\.[0-9a-z]+)$/i.exec(filename);
-            const type = match ? `image/${match[1].replace('.', '')}` : `image`;
-
-            const formData = new FormData();
-            formData.append('image', {
-                uri,
-                name: filename,
-                type,
-            });
-
-            const json = await uploadPhoto(formData).unwrap();
+            const json = await predictBirdOnDevice(uri);
             // Only a successful identification costs anything — a failed
             // request (network/server error) didn't actually use the
             // service, so it shouldn't cost the user anything. 'unlimited'
@@ -180,7 +163,7 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies, onOpenSetti
             else if (spendKind === 'reroll') dispatch(spendReroll());
             setResult(json);
         } catch (err) {
-            setError(describeQueryError(err, t('home.uploadErrorPrefix')));
+            setError(err?.message || i18n.t('home.genericError'));
         } finally {
             const remaining = MIN_LOADING_DURATION_MS - (Date.now() - startedAt);
             if (remaining > 0) {
@@ -202,14 +185,17 @@ export default function HomeScreen({ onOpenLifeList, onOpenTrophies, onOpenSetti
         dispatch(recordActivity());
     };
 
+    useEffect(() => {
+        warmLocalInference().catch((err) => {
+            console.warn('Could not preload the local bird model:', err?.message || err);
+        });
+    }, []);
+
     return (
         <SafeAreaView style={styles.container}>
             <BirdPatternBackground />
 
             <Header
-                apiHealth={apiHealth}
-                healthLoading={healthLoading}
-                onRetryHealth={refetchHealth}
                 onOpenSettings={onOpenSettings}
             />
 
