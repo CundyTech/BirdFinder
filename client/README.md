@@ -1,6 +1,6 @@
 # BirdFinder React Native Client
 
-Simple Expo-based client to take a photo and send it to the BirdFinder API.
+Expo-based client that takes a photo and identifies the bird on the device. No server or network connection is needed.
 
 Quick start:
 
@@ -11,15 +11,9 @@ cd client
 npm install
 ```
 
-2. Set the API key the server expects:
+`npm install` also runs `patch-package` (the `postinstall` script), which applies the fixes in `patches/` to `node_modules`.
 
-```bash
-cp .env.example .env
-```
-
-Edit `.env` and set `EXPO_PUBLIC_API_KEY` to match the `API_KEY` the API server was started with (see `api/README.md`). `.env` is gitignored — `.env.example` is the committed template.
-
-3. Start the app:
+2. Start the app:
 
 ```bash
 npm start
@@ -31,11 +25,22 @@ or
 npx expo start --host lan
 ```
 
-4. `API_BASE` in `src/config.js` points at the deployed API (`https://birdfinder-api.cundytech.com`). Change it if you need to hit a local server instead (e.g., `http://192.168.x.y:8080`).
+The app uses native modules, so it needs a dev client or a locally built APK (see below). Expo Go can't run it.
 
-Notes:
-- The app uses `expo-image-picker` to capture photos and uploads to the `/predict` endpoint.
-- For Android emulator, `10.0.2.2` maps to host machine `localhost`.
+## How classification works
+
+`src/services/localInference.js` loads the bundled model (`assets/bird_classifier_model.onnx`) with `onnxruntime-react-native` the first time it's needed. For each photo it:
+
+1. resizes it to 224×224 with `expo-image-manipulator`
+2. decodes the JPEG to RGB pixels with `jpeg-js`
+3. scales each channel to [-1, 1] and runs the model
+4. returns the top 5 species from `assets/labels.json`
+
+`metro.config.js` registers `.onnx` as an asset extension so Metro bundles the model file.
+
+The model and labels are copies of `model/h5/bird_classifier_model.onnx` and `model/h5/labels.json`. After retraining, copy both into `assets/` and rebuild. The label count must match the model's output size, or every prediction throws an error.
+
+The API client (`src/services/api.js`, `API_BASE` and `EXPO_PUBLIC_API_KEY` in `src/config.js`) is still in the codebase, but no screen calls it any more, so `.env` doesn't need setting up to use the app.
 
 ## Building an Android APK locally
 
@@ -74,6 +79,14 @@ This creates `client/android/`. Two machine-specific settings are needed that li
 
 The Gradle wrapper is pinned to Gradle 8.12 in `android/gradle/wrapper/gradle-wrapper.properties`. Don't change this without checking compatibility first — Gradle 8.7–8.11 has a Windows-specific bug that breaks the build (`Could not move temporary workspace ... to immutable location`), while Gradle 8.13+ is newer than the Android Gradle Plugin version React Native bundles and breaks in a different way (`Could not get unknown property 'release' for SoftwareComponent container`). 8.12 is the version that works with the AGP version currently bundled by React Native.
 
+After re-running prebuild, check `android/app/src/main/AndroidManifest.xml` for duplicated AdMob `meta-data` entries (`OPTIMIZE_AD_LOADING`, `OPTIMIZE_INITIALIZATION`). The ads config plugin can add them a second time, so delete the duplicates.
+
+### onnxruntime patch
+
+`onnxruntime-react-native`'s Android build asks for `com.microsoft.onnxruntime:onnxruntime-android:latest.integration`. Resolving that dynamic version makes Gradle parse Maven metadata, which fails on this setup with `SAXNotRecognizedException: Property 'http://javax.xml.XMLConstants/property/accessExternalSchema' is not recognized`. `patches/onnxruntime-react-native+1.24.3.patch` pins it to `1.24.3`, the npm package's own version. If you upgrade `onnxruntime-react-native`, regenerate the patch with `npx patch-package onnxruntime-react-native` and pin it to the new version.
+
+The release APK is about 230 MB, because it includes onnxruntime's native libraries for every CPU architecture as well as the 10 MB model.
+
 ### Build
 
 ```bash
@@ -104,3 +117,9 @@ The app uses `react-native-google-mobile-ads` (rewarded ads for bonus Film) and 
    adb install -r app/build/outputs/apk/release/app-release.apk
    ```
    (or the debug APK — if using the debug build, also run `adb reverse tcp:8081 tcp:8081` so the phone can reach Metro over the cable).
+
+#### Wireless debugging (Android 11+)
+
+1. Developer options → Wireless debugging → on. Tap **Pair device with pairing code**, then run `adb pair <ip>:<pairing-port> <code>`. You only need to pair once per computer.
+2. Run `adb connect <ip>:<port>`, using the **IP address & Port** from the main Wireless debugging screen. This port changes every time wireless debugging restarts, and `adb mdns services` lists the current one.
+3. The phone and PC must be able to reach each other directly. Public Wi-Fi such as coffee shops, and networks with client isolation, block this even when both devices show as connected. In that case, connect the laptop to the phone's hotspot. adb usually then finds and connects to the phone automatically.

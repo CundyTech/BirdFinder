@@ -1,23 +1,43 @@
 # BirdFinder
 
-A full-stack bird species classification application with a React Native mobile client, Go API server, and TensorFlow/Keras machine learning model.
+A bird species classification application with a React Native mobile client, a TensorFlow/Keras machine learning model, and an optional Go API server.
 
 ## Architecture
 
-- **Client**: React Native (Expo) mobile app for taking photos and displaying predictions
-- **API**: Go HTTP server that accepts image uploads and forwards them to a Python prediction subprocess
+- **Client**: React Native (Expo) mobile app that takes a photo and classifies it on the device, using the bundled ONNX model via `onnxruntime-react-native`. It works offline and needs no server.
 - **Model**: TensorFlow/Keras CNN trained on bird species images, exported to ONNX for inference
+- **API** (optional): Go HTTP server that accepts image uploads and forwards them to a Python prediction subprocess. The mobile client no longer uses it, but it still works as a standalone prediction service.
 
 ## Quick Start
 
 ### Prerequisites
 
-- Go 1.25+ (for the API server)
 - Node.js 18+ and npm (for the React Native client)
-- Python 3.10 or 3.11 (for the ML model)
+- Python 3.10 or 3.11 (only for training the model or running the API)
 - Conda (recommended for Python environment management)
+- Go 1.25+ (only for the optional API server)
 
-### 1. Set up the Python environment
+### 1. Run the React Native client
+
+```bash
+cd client
+npm install    # also applies the patches in client/patches via postinstall
+npm start
+```
+
+The app needs native modules (onnxruntime, ads, in-app purchases), so it runs in a dev client or a locally built APK, not Expo Go. See [client/README.md](client/README.md) for building and installing an Android APK.
+
+### 2. Test the application
+
+1. Open the mobile app
+2. Take a photo of a bird
+3. The app runs the model on the phone and displays the predicted species
+
+### 3. (Optional) Train the model or run the API
+
+The rest of this section is only needed for retraining the model or running the server-side prediction API.
+
+#### Set up the Python environment
 
 ```bash
 cd model
@@ -28,7 +48,7 @@ conda activate birdfinder
 pip install -r build/requirements.txt
 ```
 
-### 2. Start the API server
+#### Start the API server
 
 ```bash
 cd api
@@ -38,22 +58,9 @@ go run .
 
 The API server starts on `http://localhost:8080`. See [api/README.md](api/README.md) for the full list of environment variables and the hardening built into `/predict` (rate limiting, upload size caps, content-type validation, etc).
 
-### 3. Start the React Native client
+#### Updating the model in the app
 
-```bash
-cd client
-npm install
-cp .env.example .env   # then edit .env: EXPO_PUBLIC_API_KEY must match the server's API_KEY
-npm start
-```
-
-Follow the Expo CLI instructions to run on iOS simulator, Android emulator, or a physical device. See [client/README.md](client/README.md) for building a standalone Android APK.
-
-### 4. Test the application
-
-1. Open the mobile app
-2. Take a photo of a bird
-3. The app uploads the image to the API and displays the predicted species
+The client bundles its own copy of the model: `client/assets/bird_classifier_model.onnx` and `client/assets/labels.json`, identical to the files in `model/h5/`. After retraining, copy both files into `client/assets/` and rebuild the app. The two must stay in step, because the app checks that the model outputs one score per label.
 
 ## Project Structure
 
@@ -66,8 +73,10 @@ BirdFinder/
 │   └── README.md
 ├── client/                     # React Native (Expo) mobile app
 │   ├── App.js
-│   ├── src/                    # Screens, components, Redux store, API client, config
+│   ├── assets/                 # Bundled ONNX model + labels (copied from model/h5)
+│   ├── src/                    # Screens, components, Redux store, on-device inference, config
 │   ├── android/                # Generated native project (expo prebuild)
+│   ├── patches/                # patch-package fixes for node_modules, applied on npm install
 │   └── README.md
 ├── model/                      # Machine learning components
 │   ├── build/                  # Training and prediction scripts
@@ -80,19 +89,17 @@ BirdFinder/
 └── .github/workflows/           # CI: test the API, build & push its image to GHCR
 ```
 
-## API Endpoints
+## API Endpoints (optional server)
 
 - `GET /health` — unauthenticated health check
 - `POST /predict` — multipart/form-data with an `image` field; requires an `X-API-Key` header matching the server's `API_KEY`. Returns JSON with the predicted bird species.
 
 ## Configuration
 
-- **API key**: required by the server (`API_KEY` env var) and the client (`EXPO_PUBLIC_API_KEY` in `client/.env`) — see [api/README.md](api/README.md).
-- **API base URL**: `API_BASE` in `client/src/config.js` — set this to your machine's IP if running on a physical device.
+- **API key** (API server only): `API_KEY` env var — see [api/README.md](api/README.md). The client still reads `EXPO_PUBLIC_API_KEY` and `API_BASE` (in `client/src/config.js`), but no screen makes API requests any more, so they don't need setting to use the app.
 - **Python interpreter**: `PYTHON_INTERPRETER` env var on the API server, if it isn't at the default dev-machine path — see [api/README.md](api/README.md).
 
 ## Notes
 
-- For Android emulator testing, use `10.0.2.2` as the host IP to reach `localhost` on the host machine.
 - The model is trained on UK bird species photos pulled from GBIF — see [model/readme.md](model/readme.md).
 - `/predict` is rate-limited, capped in concurrency and upload size, and validates uploaded content is actually an image before running inference — see [api/README.md](api/README.md).
