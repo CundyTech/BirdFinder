@@ -89,17 +89,24 @@ BirdFinder/
 └── .github/workflows/           # CI: test the API, build & push its image to GHCR
 ```
 
-## API Endpoints (optional server)
+## Optional API server
+
+The mobile app doesn't use this server. It remains available as a standalone prediction service.
+
+### Endpoints
 
 - `GET /health` — unauthenticated health check
 - `POST /predict` — multipart/form-data with an `image` field; requires an `X-API-Key` header matching the server's `API_KEY`. Returns JSON with the predicted bird species.
 
-## Configuration
+`/predict` is rate-limited, capped in concurrency and upload size, and validates uploaded content is actually an image before running inference.
 
-- **API key** (API server only): `API_KEY` env var — see [api/README.md](api/README.md). The client still reads `EXPO_PUBLIC_API_KEY` and `API_BASE` (in `client/src/config.js`), but no screen makes API requests any more, so they don't need setting to use the app.
-- **Python interpreter**: `PYTHON_INTERPRETER` env var on the API server, if it isn't at the default dev-machine path — see [api/README.md](api/README.md).
+### Configuration
+
+- **`API_KEY`**: required; the server refuses to start without it.
+- **`PYTHON_INTERPRETER`**: set this if Python isn't at the default dev-machine path.
+
+See [api/README.md](api/README.md) for the full list of environment variables.
 
 ## Notes
 
 - The model is trained on UK bird species photos pulled from GBIF — see [model/readme.md](model/readme.md).
-- `/predict` is rate-limited, capped in concurrency and upload size, and validates uploaded content is actually an image before running inference — see [api/README.md](api/README.md).
