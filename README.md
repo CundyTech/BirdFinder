@@ -27,6 +27,15 @@ npm start
 
 The app needs native modules (onnxruntime, ads, in-app purchases), so it runs in a dev client or a locally built APK, not Expo Go. See [client/README.md](client/README.md) for building and installing an Android APK.
 
+The root `Makefile` wraps the common commands (requires GNU Make, e.g. `choco install make`). Run `make` to list them. The main ones:
+
+```bash
+make release    # build the standalone APK, install it on the phone and open it
+make debug      # build and install the debug APK, then run `make start` for Metro
+make connect    # reconnect a paired phone over wireless debugging
+make logs       # stream the app's JS logs and crashes
+```
+
 ### 2. Test the application
 
 1. Open the mobile app

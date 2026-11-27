@@ -110,6 +110,8 @@ The app uses `react-native-google-mobile-ads` (rewarded ads for bonus Film) and 
 
 ### Install on a phone
 
+From the repo root, `make release` builds, installs and opens the release app in one step, and `make debug` does the same for the debug build. Run `make` for the full list, including `prebuild`, which reruns `expo prebuild` and then removes the duplicate AdMob manifest entries for you. The manual steps are below.
+
 1. On the phone: Settings → About phone → tap "Build number" 7 times to enable Developer Options, then Developer options → enable USB debugging.
 2. Plug the phone in via USB and accept the "Allow USB debugging?" prompt.
 3. From `client/android`:
